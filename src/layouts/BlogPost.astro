@@ -1,7 +1,7 @@
 ---
 import type { MarkdownHeading } from 'astro';
 import type { Post } from '@/utils/posts';
-import { formatDate, slugify } from '@/utils/posts';
+import { formatDateTime, slugify } from '@/utils/posts';
 import BaseLayout from '@layouts/BaseLayout.astro';
 import TableOfContents from '@components/TableOfContents.astro';
 import ProgressBar from '@components/ProgressBar.astro';
@@ -29,13 +29,19 @@ const { title, description, pubDate, updatedDate, category, tags, cover } = post
       <p class="post-lede">{description}</p>
       <div class="post-meta">
         {cover && <span class="post-cover" aria-hidden="true">{cover}</span>}
-        <time datetime={pubDate.toISOString()}>{formatDate(pubDate)}</time>
+        <span class="meta-item">
+          <span class="meta-label">Published</span>
+          <time datetime={pubDate.toISOString()}>{formatDateTime(pubDate)}</time>
+        </span>
         <span class="dot" aria-hidden="true">·</span>
         <span>{readingTime}</span>
         {updatedDate && (
           <>
             <span class="dot" aria-hidden="true">·</span>
-            <span>Updated {formatDate(updatedDate)}</span>
+            <span class="meta-item">
+              <span class="meta-label">Updated</span>
+              <time datetime={updatedDate.toISOString()}>{formatDateTime(updatedDate)}</time>
+            </span>
           </>
         )}
       </div>
@@ -59,6 +65,14 @@ const { title, description, pubDate, updatedDate, category, tags, cover } = post
 
     <footer class="post-foot" data-pagefind-ignore>
       <a class="btn" href="/">← Back to all posts</a>
+      <a class="btn btn-rss" href="/rss.xml">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M4 11a9 9 0 0 1 9 9"></path>
+          <path d="M4 4a16 16 0 0 1 16 16"></path>
+          <circle cx="5" cy="19" r="1.4"></circle>
+        </svg>
+        Subscribe via RSS
+      </a>
     </footer>
   </article>
 </BaseLayout>
@@ -95,6 +109,14 @@ const { title, description, pubDate, updatedDate, category, tags, cover } = post
   .post-meta time { font-family: var(--font-mono); }
   .post-cover { font-size: 1.25rem; }
   .dot { opacity: 0.5; }
+  .meta-item { display: inline-flex; align-items: center; gap: 0.4rem; }
+  .meta-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--accent-text);
+  }
 
   .post-tags {
     display: flex;
@@ -196,5 +218,11 @@ const { title, description, pubDate, updatedDate, category, tags, cover } = post
     margin-top: 3rem;
     padding-top: 2rem;
     border-top: 1px solid var(--border);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: center;
+    justify-content: space-between;
   }
+  .btn-rss { display: inline-flex; align-items: center; gap: 0.45rem; }
 </style>

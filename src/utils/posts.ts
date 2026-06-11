@@ -1,4 +1,5 @@
 import { getCollection, type CollectionEntry } from 'astro:content';
+import { siteConfig } from '@/config';
 
 export type Post = CollectionEntry<'blog'>;
 
@@ -78,4 +79,20 @@ const dateFormatter = new Intl.DateTimeFormat('en-US', {
 
 export function formatDate(date: Date): string {
   return dateFormatter.format(date);
+}
+
+// Date + time rendered in the site's configured time zone, with a readable
+// abbreviation (e.g. "IST") appended since Intl emits "GMT+5:30" for many zones.
+const dateTimeFormatter = new Intl.DateTimeFormat('en-GB', {
+  day: '2-digit',
+  month: 'short',
+  year: 'numeric',
+  hour: '2-digit',
+  minute: '2-digit',
+  hour12: false,
+  timeZone: siteConfig.timeZone,
+});
+
+export function formatDateTime(date: Date): string {
+  return `${dateTimeFormatter.format(date)} ${siteConfig.timeZoneLabel}`;
 }

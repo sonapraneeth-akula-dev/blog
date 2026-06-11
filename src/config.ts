@@ -13,6 +13,10 @@ export const siteConfig = {
   author: 'Grihasetu',
   /** Posts per page on the home feed and taxonomy listings. */
   pageSize: 7,
+  /** IANA time zone used to render post timestamps. */
+  timeZone: 'Asia/Kolkata',
+  /** Human-readable abbreviation appended after timestamps (e.g. IST, UTC). */
+  timeZoneLabel: 'IST',
 };
 
 export interface NavLink {
