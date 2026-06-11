@@ -1,4 +1,5 @@
 import { defineConfig, fontProviders } from 'astro/config';
+import { unified } from '@astrojs/markdown-remark';
 import mdx from '@astrojs/mdx';
 import sitemap from '@astrojs/sitemap';
 import expressiveCode from 'astro-expressive-code';
@@ -43,47 +44,51 @@ export default defineConfig({
   ],
   compressHTML: true,
   markdown: {
-    // Add an id to every heading, then a small clickable anchor link beside it.
-    rehypePlugins: [
-      rehypeSlug,
-      [
-        rehypeAutolinkHeadings,
-        {
-          behavior: 'append',
-          properties: { className: ['heading-anchor'], ariaHidden: 'true', tabIndex: -1 },
-          // An icon element (no text node) so the "#" never leaks into the
-          // table-of-contents heading text that Astro extracts.
-          content: {
-            type: 'element',
-            tagName: 'svg',
-            properties: {
-              width: 15,
-              height: 15,
-              viewBox: '0 0 24 24',
-              fill: 'none',
-              stroke: 'currentColor',
-              strokeWidth: 2,
-              strokeLinecap: 'round',
-              strokeLinejoin: 'round',
+    // Astro 6 moved remark/rehype plugin config under `processor`. `unified()`
+    // builds the default remark/rehype pipeline and lets us extend it.
+    processor: unified({
+      // Add an id to every heading, then a small clickable anchor link beside it.
+      rehypePlugins: [
+        rehypeSlug,
+        [
+          rehypeAutolinkHeadings,
+          {
+            behavior: 'append',
+            properties: { className: ['heading-anchor'], ariaHidden: 'true', tabIndex: -1 },
+            // An icon element (no text node) so the "#" never leaks into the
+            // table-of-contents heading text that Astro extracts.
+            content: {
+              type: 'element',
+              tagName: 'svg',
+              properties: {
+                width: 15,
+                height: 15,
+                viewBox: '0 0 24 24',
+                fill: 'none',
+                stroke: 'currentColor',
+                strokeWidth: 2,
+                strokeLinecap: 'round',
+                strokeLinejoin: 'round',
+              },
+              children: [
+                {
+                  type: 'element',
+                  tagName: 'path',
+                  properties: { d: 'M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71' },
+                  children: [],
+                },
+                {
+                  type: 'element',
+                  tagName: 'path',
+                  properties: { d: 'M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71' },
+                  children: [],
+                },
+              ],
             },
-            children: [
-              {
-                type: 'element',
-                tagName: 'path',
-                properties: { d: 'M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71' },
-                children: [],
-              },
-              {
-                type: 'element',
-                tagName: 'path',
-                properties: { d: 'M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71' },
-                children: [],
-              },
-            ],
           },
-        },
+        ],
       ],
-    ],
+    }),
   },
   // Self-host Google Fonts at build time (Astro Fonts API): removes the
   // fonts.googleapis.com / fonts.gstatic.com origins from the critical path and
