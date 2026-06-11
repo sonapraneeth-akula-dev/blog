@@ -33,17 +33,17 @@ const { title, description, pubDate, updatedDate, category, tags, cover } = post
           <span class="meta-label">Published</span>
           <time datetime={pubDate.toISOString()}>{formatDateTime(pubDate)}</time>
         </span>
-        <span class="dot" aria-hidden="true">·</span>
-        <span>{readingTime}</span>
         {updatedDate && (
           <>
             <span class="dot" aria-hidden="true">·</span>
             <span class="meta-item">
-              <span class="meta-label">Updated</span>
+              <span class="meta-label">Last updated</span>
               <time datetime={updatedDate.toISOString()}>{formatDateTime(updatedDate)}</time>
             </span>
           </>
         )}
+        <span class="dot" aria-hidden="true">·</span>
+        <span>{readingTime}</span>
       </div>
       {tags.length > 0 && (
         <ul class="post-tags" data-pagefind-ignore>
