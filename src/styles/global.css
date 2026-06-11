@@ -11,9 +11,13 @@
     "Segoe UI Symbol", "Noto Color Emoji";
   --font-system-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
     "Liberation Mono", "Roboto Mono", "Courier New", monospace;
-  --font-sans: var(--font-sans-files), var(--font-system);
-  --font-heading: var(--font-heading-files), var(--font-system);
-  --font-mono: var(--font-mono-files), var(--font-system-mono);
+  /* The nested var() fallback covers the case where the self-hosted font
+     variable is undefined (e.g. the <Font> component never ran) — an undefined
+     var() would otherwise invalidate the whole declaration. The trailing system
+     stack covers the case where the web font simply fails to download. */
+  --font-sans: var(--font-sans-files, var(--font-system)), var(--font-system);
+  --font-heading: var(--font-heading-files, var(--font-system)), var(--font-system);
+  --font-mono: var(--font-mono-files, var(--font-system-mono)), var(--font-system-mono);
 
   /* Premium Light Theme Palette */
   --bg: #fafafa;
