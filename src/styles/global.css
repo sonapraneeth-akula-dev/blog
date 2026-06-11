@@ -38,9 +38,14 @@
   --accent-soft: rgba(79, 70, 229, 0.08);
   --dot-grid: rgba(0, 0, 0, 0.04);
 
-  --radius: 14px;
-  --radius-sm: 8px;
-  --radius-lg: 24px;
+  /* Corner roundedness. Change --radius-base alone to restyle every component
+     (cards, chips, buttons, inputs, code blocks). Set it to 0 for sharp
+     corners, or raise it (e.g. 20px) for a softer, rounder look. The sm/lg
+     steps scale with it automatically. */
+  --radius-base: 14px;
+  --radius-sm: calc(var(--radius-base) * 0.55);
+  --radius: var(--radius-base);
+  --radius-lg: calc(var(--radius-base) * 1.7);
   --container: 70rem;
 }
 
@@ -231,9 +236,23 @@ p {
   background: var(--bg-subtle);
   color: var(--text);
   padding: 0.2em 0.4em;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   border: 1px solid var(--border);
   font-weight: 450;
+}
+
+/* Card surface — shared border/background/hover for all card-like components.
+   Padding is intentionally omitted so cards can host full-bleed media. */
+.card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+.card:hover {
+  border-color: var(--border-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.07);
 }
 
 .container {
