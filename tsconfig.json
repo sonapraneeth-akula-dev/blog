@@ -4,8 +4,8 @@
     "types": [
       "node"
     ],
-    // Needed so the path aliases below resolve unambiguously.
-    "baseUrl": ".",
+    // `baseUrl` is deprecated as of TS 6; modern TypeScript resolves the path
+    // aliases below relative to this tsconfig's location, so it isn't needed.
     "paths": {
       "@/*": [
         "./src/*"
