@@ -79,6 +79,57 @@ import { siteConfig } from '@/config';
     --pagefind-ui-border-radius: var(--radius);
     --pagefind-ui-font: var(--font-sans);
   }
+
+  /* Make the typed query and placeholder legible in both themes. */
+  #search .pagefind-ui__search-input {
+    color: var(--text);
+    background: var(--bg-subtle);
+    border-color: var(--border);
+  }
+  #search .pagefind-ui__search-input::placeholder {
+    color: var(--text-muted);
+    opacity: 1;
+  }
+
+  /* Replace the bulky "Clear" text button with a compact circular × icon. */
+  #search .pagefind-ui__search-clear {
+    width: 2rem;
+    height: 2rem;
+    padding: 0;
+    inset-inline-end: 0.6rem;
+    display: inline-grid;
+    place-items: center;
+    border-radius: 50%;
+    color: var(--text-muted);
+    background: transparent;
+    font-size: 0; /* hides the literal "Clear" label */
+    line-height: 1;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+  #search .pagefind-ui__search-clear::before {
+    content: "×";
+    font-size: 1.5rem;
+    line-height: 1;
+  }
+  #search .pagefind-ui__search-clear:hover {
+    background: var(--bg-subtle);
+    color: var(--text);
+  }
+
+  /* Wrap each result in a card so it gains the site's surface + hover lift. */
+  #search .pagefind-ui__result {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    padding: 1.1rem 1.3rem;
+    margin-bottom: 0.85rem;
+    transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  #search .pagefind-ui__result:hover {
+    border-color: var(--border-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.07);
+  }
 </style>
 
 <style>
