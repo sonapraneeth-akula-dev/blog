@@ -1,0 +1,92 @@
+---
+import BaseLayout from '@layouts/BaseLayout.astro';
+import { siteConfig } from '@/config';
+---
+
+<BaseLayout
+  title="Search"
+  description={`Search ${siteConfig.title}. Runs entirely in your browser — no server round-trips.`}
+>
+  <div class="container page-head">
+    <p class="eyebrow">Find anything</p>
+    <h1>Search</h1>
+    <p class="lede">
+      A fully client-side index — works offline once the page has loaded, with no
+      server calls.
+    </p>
+  </div>
+
+  <div class="container search-wrap">
+    <div id="search" data-pagefind-ui></div>
+    <p id="search-fallback" class="search-fallback" hidden>
+      The search index is generated at build time. Run <code>bun run build</code>
+      and open the preview to try it locally.
+    </p>
+  </div>
+</BaseLayout>
+
+<script>
+  // Pagefind assets are emitted into /pagefind/ during the build step
+  // (`pagefind --site dist`) and are absent on the dev server. The UI bundle is
+  // a classic script exposing a global `PagefindUI`, so we inject it as a
+  // <script> tag and degrade gracefully with a hint if it is missing.
+  function initSearch() {
+    const fallback = document.getElementById('search-fallback');
+    const showFallback = () => {
+      if (fallback) fallback.hidden = false;
+    };
+
+    const css = document.createElement('link');
+    css.rel = 'stylesheet';
+    css.href = '/pagefind/pagefind-ui.css';
+    document.head.appendChild(css);
+
+    const script = document.createElement('script');
+    script.src = '/pagefind/pagefind-ui.js';
+    script.onload = () => {
+      const PagefindUI = (window as unknown as {
+        PagefindUI?: new (opts: unknown) => void;
+      }).PagefindUI;
+      if (!PagefindUI) {
+        showFallback();
+        return;
+      }
+      new PagefindUI({
+        element: '#search',
+        showSubResults: true,
+        showImages: false,
+        pageSize: 8,
+        resetStyles: false,
+      });
+    };
+    script.onerror = showFallback;
+    document.body.appendChild(script);
+  }
+  initSearch();
+</script>
+
+<style is:global>
+  /* Map Pagefind UI tokens onto the site's design tokens (both themes). */
+  #search {
+    --pagefind-ui-primary: var(--accent);
+    --pagefind-ui-text: var(--text);
+    --pagefind-ui-background: var(--surface);
+    --pagefind-ui-border: var(--border);
+    --pagefind-ui-tag: var(--bg-subtle);
+    --pagefind-ui-border-width: 1px;
+    --pagefind-ui-border-radius: var(--radius);
+    --pagefind-ui-font: var(--font-sans);
+  }
+</style>
+
+<style>
+  .search-wrap { padding-bottom: 3rem; max-width: 48rem; }
+  .search-fallback {
+    margin-top: 1rem;
+    padding: 1rem 1.25rem;
+    border: 1px dashed var(--border);
+    border-radius: var(--radius);
+    color: var(--text-muted);
+    background: var(--surface);
+  }
+</style>

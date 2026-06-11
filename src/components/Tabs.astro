@@ -1,0 +1,186 @@
+---
+/**
+ * Synced tabbed panels for MDX. Tabs in different groups that share the same
+ * `syncKey` switch together (e.g. every "npm / pnpm / bun" group on the page),
+ * and the choice is remembered via localStorage.
+ *
+ * Usage in .mdx:
+ *   import { Tabs, TabItem } from '@components/mdx';
+ *   <Tabs syncKey="pkg">
+ *     <TabItem label="bun">```sh\nbun add astro\n```</TabItem>
+ *     <TabItem label="npm">```sh\nnpm i astro\n```</TabItem>
+ *   </Tabs>
+ */
+interface Props {
+  syncKey?: string;
+}
+const { syncKey } = Astro.props;
+---
+
+<blog-tabs class="tabs" data-sync-key={syncKey}>
+  <div class="tablist" role="tablist"></div>
+  <div class="tab-panels"><slot /></div>
+</blog-tabs>
+
+<script>
+  class BlogTabs extends HTMLElement {
+    connectedCallback() {
+      const syncKey = this.dataset.syncKey || '';
+      const panels = Array.from(
+        this.querySelectorAll<HTMLElement>(':scope > .tab-panels > .tab-panel'),
+      );
+      if (panels.length === 0) return;
+
+      const tablist = this.querySelector<HTMLElement>('.tablist');
+      if (!tablist) return;
+
+      const uid = Math.random().toString(36).slice(2, 8);
+      const tabs: HTMLButtonElement[] = [];
+
+      panels.forEach((panel, i) => {
+        const label = panel.dataset.label || `Tab ${i + 1}`;
+        const icon = panel.dataset.icon || '';
+        const tabId = `tab-${uid}-${i}`;
+        const panelId = `panel-${uid}-${i}`;
+        panel.id = panelId;
+        panel.setAttribute('role', 'tabpanel');
+        panel.setAttribute('aria-labelledby', tabId);
+        panel.dataset.tabLabel = label;
+
+        const btn = document.createElement('button');
+        btn.className = 'tab';
+        btn.id = tabId;
+        btn.type = 'button';
+        btn.setAttribute('role', 'tab');
+        btn.setAttribute('aria-controls', panelId);
+        btn.dataset.label = label;
+        btn.innerHTML = (icon ? `<span class="tab-icon" aria-hidden="true">${icon}</span>` : '') + `<span>${label}</span>`;
+        btn.addEventListener('click', () => this.select(label, true));
+        btn.addEventListener('keydown', (e) => this.onKey(e, i));
+        tablist.appendChild(btn);
+        tabs.push(btn);
+      });
+
+      this._tabs = tabs;
+      this._panels = panels;
+      this._syncKey = syncKey;
+
+      // Initial selection: synced preference → first tab.
+      const stored = syncKey ? localStorage.getItem(`tabs:${syncKey}`) : null;
+      const initial =
+        (stored && panels.find((p) => p.dataset.label === stored)?.dataset.label) ||
+        panels[0].dataset.label!;
+      this.select(initial, false);
+
+      // React to other groups that share the same syncKey.
+      if (syncKey) {
+        document.addEventListener('blog-tabs:sync', (e: Event) => {
+          const detail = (e as CustomEvent).detail;
+          if (detail.key === syncKey && detail.source !== this) {
+            this.select(detail.label, false);
+          }
+        });
+      }
+    }
+
+    private _tabs: HTMLButtonElement[] = [];
+    private _panels: HTMLElement[] = [];
+    private _syncKey = '';
+
+    select(label: string, broadcast: boolean) {
+      let matched = false;
+      this._panels.forEach((panel) => {
+        const isActive = panel.dataset.label === label;
+        panel.hidden = !isActive;
+        if (isActive) matched = true;
+      });
+      // If this group lacks the requested label, leave it untouched.
+      if (!matched) return;
+
+      this._tabs.forEach((tab) => {
+        const isActive = tab.dataset.label === label;
+        tab.setAttribute('aria-selected', String(isActive));
+        tab.tabIndex = isActive ? 0 : -1;
+        tab.classList.toggle('active', isActive);
+      });
+
+      if (broadcast && this._syncKey) {
+        localStorage.setItem(`tabs:${this._syncKey}`, label);
+        document.dispatchEvent(
+          new CustomEvent('blog-tabs:sync', {
+            detail: { key: this._syncKey, label, source: this },
+          }),
+        );
+      }
+    }
+
+    private onKey(e: KeyboardEvent, index: number) {
+      const tabs = this._tabs;
+      let next = index;
+      if (e.key === 'ArrowRight') next = (index + 1) % tabs.length;
+      else if (e.key === 'ArrowLeft') next = (index - 1 + tabs.length) % tabs.length;
+      else if (e.key === 'Home') next = 0;
+      else if (e.key === 'End') next = tabs.length - 1;
+      else return;
+      e.preventDefault();
+      const label = tabs[next].dataset.label!;
+      this.select(label, true);
+      tabs[next].focus();
+    }
+  }
+
+  if (!customElements.get('blog-tabs')) {
+    customElements.define('blog-tabs', BlogTabs);
+  }
+</script>
+
+<style>
+  .tabs {
+    display: block;
+    margin: 1.5rem 0;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    background: var(--surface);
+  }
+  .tablist {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    padding: 0.4rem 0.4rem 0;
+    background: var(--bg-subtle);
+    border-bottom: 1px solid var(--border);
+  }
+  .tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 0.9rem;
+    border: 1px solid transparent;
+    border-bottom: none;
+    border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+    background: transparent;
+    color: var(--text-muted);
+    font-family: var(--font-sans);
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .tab:hover { color: var(--text); background: var(--surface); }
+  .tab.active {
+    color: var(--accent-text);
+    background: var(--surface);
+    border-color: var(--border);
+    border-bottom-color: var(--surface);
+    margin-bottom: -1px;
+  }
+  .tab-icon { display: inline-flex; }
+  .tab-panels { padding: 0 1rem; }
+  /* Expressive Code blocks inside panels already have their own margins. */
+  .tab-panel { padding-block: 0.25rem; }
+  /* Before hydration, show only the first panel to avoid a flash of all tabs. */
+  .tab-panel:not(:first-child) { display: none; }
+  .tab-panel[hidden] { display: none !important; }
+  .tab-panel:not([hidden]) { display: block; }
+</style>

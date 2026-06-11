@@ -1,0 +1,200 @@
+---
+import type { MarkdownHeading } from 'astro';
+import type { Post } from '@/utils/posts';
+import { formatDate, slugify } from '@/utils/posts';
+import BaseLayout from '@layouts/BaseLayout.astro';
+import TableOfContents from '@components/TableOfContents.astro';
+import ProgressBar from '@components/ProgressBar.astro';
+
+interface Props {
+  post: Post;
+  headings: MarkdownHeading[];
+  readingTime: string;
+}
+
+const { post, headings, readingTime } = Astro.props;
+const { title, description, pubDate, updatedDate, category, tags, cover } = post.data;
+---
+
+<BaseLayout title={title} description={description} article>
+  <ProgressBar />
+  <article class="post container" data-pagefind-body>
+    <header class="post-head">
+      <nav class="crumbs" aria-label="Breadcrumb">
+        <a href="/">Home</a>
+        <span aria-hidden="true">/</span>
+        <a href={`/categories/${slugify(category)}`}>{category}</a>
+      </nav>
+      <h1>{title}</h1>
+      <p class="post-lede">{description}</p>
+      <div class="post-meta">
+        {cover && <span class="post-cover" aria-hidden="true">{cover}</span>}
+        <time datetime={pubDate.toISOString()}>{formatDate(pubDate)}</time>
+        <span class="dot" aria-hidden="true">·</span>
+        <span>{readingTime}</span>
+        {updatedDate && (
+          <>
+            <span class="dot" aria-hidden="true">·</span>
+            <span>Updated {formatDate(updatedDate)}</span>
+          </>
+        )}
+      </div>
+      {tags.length > 0 && (
+        <ul class="post-tags" data-pagefind-ignore>
+          {tags.map((t) => (
+            <li><a class="chip" href={`/tags/${slugify(t)}`}>#{t}</a></li>
+          ))}
+        </ul>
+      )}
+    </header>
+
+    <div class="post-grid">
+      <div class="post-body">
+        <slot />
+      </div>
+      <aside class="post-aside" data-pagefind-ignore>
+        <TableOfContents headings={headings} />
+      </aside>
+    </div>
+
+    <footer class="post-foot" data-pagefind-ignore>
+      <a class="btn" href="/">← Back to all posts</a>
+    </footer>
+  </article>
+</BaseLayout>
+
+<style>
+  .post { padding-block: 2.5rem 4rem; }
+
+  .crumbs {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-bottom: 1rem;
+  }
+  .crumbs a { color: var(--text-muted); font-weight: 600; }
+  .crumbs a:hover { color: var(--accent-text); }
+
+  .post-head { max-width: 48rem; }
+  .post-head h1 { margin: 0 0 0.75rem; }
+  .post-lede {
+    font-size: 1.2rem;
+    color: var(--text-muted);
+    margin: 0 0 1rem;
+  }
+  .post-meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+  }
+  .post-meta time { font-family: var(--font-mono); }
+  .post-cover { font-size: 1.25rem; }
+  .dot { opacity: 0.5; }
+
+  .post-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    list-style: none;
+    margin: 1.25rem 0 0;
+    padding: 0;
+  }
+
+  /* Two-column layout: article + sticky TOC. Collapses to one column on tablet. */
+  .post-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 16rem;
+    gap: 3rem;
+    margin-top: 2.5rem;
+    align-items: start;
+  }
+  .post-aside {
+    position: sticky;
+    top: 5.5rem;
+  }
+
+  @media (max-width: 60rem) {
+    .post-grid { grid-template-columns: minmax(0, 1fr); gap: 1.5rem; }
+    .post-aside { position: static; order: -1; }
+  }
+
+  /* Prose */
+  .post-body {
+    max-width: 46rem;
+    font-size: 1.05rem;
+  }
+  .post-body :global(h2) {
+    margin-top: 2.75rem;
+    padding-top: 0.5rem;
+    scroll-margin-top: 5.5rem;
+  }
+  .post-body :global(h3) {
+    margin-top: 2rem;
+    scroll-margin-top: 5.5rem;
+  }
+  .post-body :global(p),
+  .post-body :global(ul),
+  .post-body :global(ol) { margin-block: 1rem; }
+  .post-body :global(ul),
+  .post-body :global(ol) { padding-left: 1.4rem; }
+  .post-body :global(li) { margin-block: 0.35rem; }
+  .post-body :global(img) {
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+  }
+  .post-body :global(hr) {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 2.5rem 0;
+  }
+  .post-body :global(blockquote) {
+    margin: 1.5rem 0;
+    padding: 0.75rem 1.25rem;
+    border-left: 3px solid var(--accent);
+    background: var(--accent-soft);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    color: var(--text-muted);
+  }
+  .post-body :global(blockquote p:last-child) { margin-bottom: 0; }
+  .post-body :global(table) {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.5rem 0;
+    font-size: 0.95rem;
+  }
+  .post-body :global(th),
+  .post-body :global(td) {
+    border: 1px solid var(--border);
+    padding: 0.6rem 0.85rem;
+    text-align: left;
+  }
+  .post-body :global(th) { background: var(--bg-subtle); }
+  .post-body :global(a) { text-decoration: underline; text-underline-offset: 2px; }
+
+  /* Heading anchor links (added via rehype-autolink). */
+  .post-body :global(.heading-anchor) {
+    display: inline-flex;
+    align-items: center;
+    margin-left: 0.4rem;
+    vertical-align: middle;
+    opacity: 0;
+    color: var(--text-muted);
+    text-decoration: none;
+    transition: opacity 0.15s ease, color 0.15s ease;
+  }
+  .post-body :global(.heading-anchor:hover) { color: var(--accent-text); }
+  .post-body :global(h2:hover .heading-anchor),
+  .post-body :global(h3:hover .heading-anchor),
+  .post-body :global(h4:hover .heading-anchor) { opacity: 1; }
+
+  .post-foot {
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--border);
+  }
+</style>
