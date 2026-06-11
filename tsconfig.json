@@ -4,6 +4,8 @@
     "types": [
       "node"
     ],
+    // Needed so the path aliases below resolve unambiguously.
+    "baseUrl": ".",
     "paths": {
       "@/*": [
         "./src/*"
@@ -15,14 +17,8 @@
         "./src/layouts/*"
       ]
     }
-  },
-  "include": [
-    ".astro/types.d.ts",
-    "src/**/*",
-    "astro.config.ts"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist"
-  ]
+  }
+  // `include`/`exclude` are inherited from astro/tsconfigs/strict, which already
+  // globs the project (`${configDir}/**/*`), pulls in `.astro/types.d.ts` and
+  // excludes `dist`. Re-declaring them here only narrowed that coverage.
 }
