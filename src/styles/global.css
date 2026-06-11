@@ -46,9 +46,6 @@
   --radius-sm: calc(var(--radius-base) * 0.55);
   --radius: var(--radius-base);
   --radius-lg: calc(var(--radius-base) * 1.7);
-  /* Button corner roundedness. Tune this alone to make every .btn more or
-     less round (0 = sharp, 999px = pill) without affecting cards/inputs. */
-  --radius-button: 8px;
   --container: 70rem;
 }
 
@@ -294,7 +291,7 @@ p {
   justify-content: center;
   gap: 0.55rem;
   padding: 0.7rem 1.3rem;
-  border-radius: var(--radius-button);
+  border-radius: var(--radius);
   font-weight: 600;
   font-size: 0.925rem;
   font-family: var(--font-heading);
