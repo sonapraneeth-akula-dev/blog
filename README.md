@@ -37,6 +37,18 @@ bun run preview
 > Search only works after a full build — Pagefind generates its index from the
 > built `dist/` output, so it is absent on the dev server.
 
+### Search on the dev server
+
+To exercise search while running `bun run dev`, generate the index into the
+served `public/` folder once, then reload the search page:
+
+```sh
+bun run search:index   # astro build + pagefind --output-path public/pagefind
+```
+
+The emitted `public/pagefind/` directory is git-ignored. Re-run the command
+whenever content changes; a full `bun run build` regenerates it for production.
+
 ## Authoring posts
 
 Add a `.md` or `.mdx` file under `src/content/blog/`:

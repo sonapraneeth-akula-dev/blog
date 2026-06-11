@@ -19,8 +19,10 @@ import { siteConfig } from '@/config';
   <div class="container search-wrap">
     <div id="search" data-pagefind-ui></div>
     <p id="search-fallback" class="search-fallback" hidden>
-      The search index is generated at build time. Run <code>bun run build</code>
-      and open the preview to try it locally.
+      The search index is generated at build time. To try it on the dev server,
+      run <code>bun run search:index</code> once to emit the index into
+      <code>public/pagefind/</code>, then reload this page. A full
+      <code>bun run build</code> also produces it for the preview.
     </p>
   </div>
 </BaseLayout>
