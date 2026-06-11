@@ -1,6 +1,8 @@
 ---
 import type { Post } from '@/utils/posts';
 import { formatDate, slugify } from '@/utils/posts';
+import CategoryIcon from '@components/CategoryIcon.astro';
+import TagIcon from '@components/TagIcon.astro';
 
 interface Props {
   post: Post;
@@ -19,7 +21,7 @@ const href = `/blog/${post.id}`;
   <div class="featured-body">
     <div class="featured-top">
       <span class="chip chip--accent">Latest</span>
-      <a class="chip" href={`/categories/${slugify(category)}`}>{category}</a>
+      <a class="chip" href={`/categories/${slugify(category)}`}><CategoryIcon />{category}</a>
     </div>
     <h2 class="featured-title">{title}</h2>
     <p class="featured-desc">{description}</p>
@@ -31,7 +33,7 @@ const href = `/blog/${post.id}`;
     {tags.length > 0 && (
       <ul class="featured-tags">
         {tags.slice(0, 4).map((t) => (
-          <li><a class="chip" href={`/tags/${slugify(t)}`}>#{t}</a></li>
+          <li><a class="chip" href={`/tags/${slugify(t)}`}><TagIcon />{t}</a></li>
         ))}
       </ul>
     )}

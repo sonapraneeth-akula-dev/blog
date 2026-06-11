@@ -1,6 +1,7 @@
 ---
 import type { Post } from '@/utils/posts';
 import { formatDate, slugify } from '@/utils/posts';
+import CategoryIcon from '@components/CategoryIcon.astro';
 
 interface Props {
   post: Post;
@@ -17,7 +18,7 @@ const href = `/blog/${post.id}`;
     <span class="cover-glyph">{cover ?? '◆'}</span>
   </div>
   <div class="card-content">
-    <a class="chip" href={`/categories/${slugify(category)}`}>{category}</a>
+    <a class="chip" href={`/categories/${slugify(category)}`}><CategoryIcon />{category}</a>
     <h3 class="card-title">{title}</h3>
     <p class="card-desc">{description}</p>
     <div class="card-meta">
