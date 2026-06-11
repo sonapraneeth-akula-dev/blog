@@ -22,7 +22,11 @@ function scale(count: number): number {
   <div class="container cloud">
     {tags.map((tag) => (
       <a class="cloud-tag" href={`/tags/${tag.slug}`} style={`font-size:${scale(tag.count)}rem`}>
-        <span class="hash">#</span>{tag.name}
+        <svg class="tag-icon" aria-hidden="true" width="0.9em" height="0.9em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20.59 13.41 11 3.83A2 2 0 0 0 9.59 3H4a1 1 0 0 0-1 1v5.59A2 2 0 0 0 3.83 11l9.58 9.59a2 2 0 0 0 2.83 0l4.35-4.35a2 2 0 0 0 0-2.83z"></path>
+          <circle cx="7" cy="7" r="1.2"></circle>
+        </svg>
+        {tag.name}
         <span class="ct">{tag.count}</span>
       </a>
     ))}
@@ -56,7 +60,7 @@ function scale(count: number): number {
     background: var(--accent-soft);
     transform: translateY(-1px);
   }
-  .hash { color: var(--accent-text); }
+  .tag-icon { color: var(--accent-text); flex: none; }
   .ct {
     font-size: 0.7rem;
     font-family: var(--font-mono);
