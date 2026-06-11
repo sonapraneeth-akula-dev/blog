@@ -91,37 +91,34 @@ import { siteConfig } from '@/config';
     opacity: 1;
   }
 
-  /* Replace the bulky "Clear" text button with a compact circular × icon.
+  /* Replace the bulky "Clear" text button with a bare × glyph (no border/ring).
      Pagefind's .pagefind-ui__form is the offset parent and wraps the results
      drawer too, so anchor to the input row (64px tall, button top:3px) the way
-     Pagefind does, then centre a round × glyph inside it. */
+     Pagefind does, then optically centre the × inside it. */
   #search .pagefind-ui__search-clear {
     top: calc(3px * var(--pagefind-ui-scale));
     inset-inline-end: calc(8px * var(--pagefind-ui-scale));
     height: calc(58px * var(--pagefind-ui-scale));
     width: calc(58px * var(--pagefind-ui-scale));
     padding: 0;
-    display: grid;
-    place-items: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
     background: transparent;
-    border-radius: 50%;
+    color: var(--text-muted);
     font-size: 0; /* hides the literal "Clear" label */
-    line-height: 1;
+    cursor: pointer;
+    transition: color 0.15s ease;
   }
   #search .pagefind-ui__search-clear::before {
-    content: "×";
-    display: grid;
-    place-items: center;
-    width: 1.9rem;
-    height: 1.9rem;
-    border-radius: 50%;
-    font-size: 1.4rem;
+    content: "\00d7"; /* × */
+    font-size: 1.6rem;
     line-height: 1;
-    color: var(--text-muted);
-    transition: background 0.15s ease, color 0.15s ease;
+    /* The × glyph sits slightly above its line box; nudge it to centre. */
+    transform: translateY(-0.04em);
   }
-  #search .pagefind-ui__search-clear:hover::before {
-    background: var(--bg-subtle);
+  #search .pagefind-ui__search-clear:hover {
     color: var(--text);
   }
 
