@@ -5,6 +5,8 @@ import { formatDateTime, slugify } from '@/utils/posts';
 import BaseLayout from '@layouts/BaseLayout.astro';
 import TableOfContents from '@components/TableOfContents.astro';
 import ProgressBar from '@components/ProgressBar.astro';
+import CategoryIcon from '@components/CategoryIcon.astro';
+import TagIcon from '@components/TagIcon.astro';
 
 interface Props {
   post: Post;
@@ -45,13 +47,18 @@ const { title, description, pubDate, updatedDate, category, tags, cover } = post
         <span class="dot" aria-hidden="true">·</span>
         <span>{readingTime}</span>
       </div>
-      {tags.length > 0 && (
-        <ul class="post-tags" data-pagefind-ignore>
-          {tags.map((t) => (
-            <li><a class="chip" href={`/tags/${slugify(t)}`}>#{t}</a></li>
-          ))}
-        </ul>
-      )}
+      <ul class="post-tags" data-pagefind-ignore>
+        <li>
+          <a class="chip chip--accent" href={`/categories/${slugify(category)}`}>
+            <CategoryIcon />{category}
+          </a>
+        </li>
+        {tags.map((t) => (
+          <li>
+            <a class="chip" href={`/tags/${slugify(t)}`}><TagIcon />{t}</a>
+          </li>
+        ))}
+      </ul>
     </header>
 
     <div class="post-grid">
