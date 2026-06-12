@@ -23,7 +23,13 @@ ENV NODE_ENV=development
 ENV PUBLIC_APP_ENV=dev
 COPY . .
 EXPOSE 4322
-CMD ["sh", "-c", "bun run search:index && { bun run watch:content & bun run dev; }"]
+# The dev server is run under a watchdog (scripts/dev-server.ts) that restarts
+# it if it ever stops responding — Astro's in-process config restart can hang
+# under bind-mount polling and never rebind the port. The healthcheck surfaces
+# that state in `docker ps` as a second line of defence.
+HEALTHCHECK --interval=15s --timeout=5s --start-period=40s --retries=3 \
+  CMD wget -q --spider http://127.0.0.1:4322/ || exit 1
+CMD ["sh", "-c", "bun run search:index && { bun run watch:content & bun run dev:serve; }"]
 
 # ─── Build ───────────────────────────────────────────────────────────────────
 # Produces the static build output in /app/dist. `bun run build` runs
