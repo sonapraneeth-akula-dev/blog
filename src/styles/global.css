@@ -305,6 +305,22 @@ p {
   margin: 0.36rem;
 }
 
+/* macOS-style traffic-light dots on terminal frames. EC paints all three dots
+   as a single `::before` element whose SVG mask carves out three circles, then
+   fills them with one flat colour. We keep that mask but swap the flat fill for
+   a horizontal three-band gradient: each masked circle sits entirely within one
+   band, so they read as red (close), amber (minimise) and green (maximise). The
+   duplicated `.is-terminal` raises specificity above EC's own rule, which is
+   injected after our stylesheet. */
+.expressive-code .frame.is-terminal.is-terminal .header::before {
+  background-color: transparent;
+  background-image: linear-gradient(to right,
+      #ff5f56 0 33.333%,
+      #ffbd2e 33.333% 66.666%,
+      #27c93f 66.666% 100%);
+  opacity: 1;
+}
+
 /* Card surface — shared border/background/hover for all card-like components.
    Padding is intentionally omitted so cards can host full-bleed media. */
 .card {
