@@ -49,22 +49,32 @@
   --container: 70rem;
 }
 
-/* Layout width expansion on larger screens */
-@media (min-width: 1441px) {
+/* Layout width expansion on larger screens. Listing/home pages (card grids)
+   benefit directly from the extra width; reading pages cap themselves smaller
+   (see .post) so line length stays comfortable. Breakpoints target common
+   laptop/desktop/monitor widths so big screens don't waste a third of their
+   width on side margins. */
+@media (min-width: 1280px) {
   :root {
-    --container: 80rem;
+    --container: 78rem;
   }
 }
 
-@media (min-width: 1921px) {
+@media (min-width: 1536px) {
   :root {
-    --container: 92rem;
+    --container: 88rem;
   }
 }
 
-@media (min-width: 2561px) {
+@media (min-width: 1920px) {
   :root {
-    --container: 110rem;
+    --container: 100rem;
+  }
+}
+
+@media (min-width: 2560px) {
+  :root {
+    --container: 118rem;
   }
 }
 

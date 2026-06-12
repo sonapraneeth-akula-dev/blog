@@ -108,7 +108,11 @@ const { title, description, pubDate, updatedDate, category, tags, cover } = post
 </BaseLayout>
 
 <style>
-  .post { padding-block: 2.5rem 4rem; }
+  /* Cap the reading layout independent of the global --container (which grows
+     wide on big screens for card grids). Keeps line length comfortable while
+     the prose + TOC block sits centred with no awkward dead gap between them.
+     The column widths step up on large screens so code blocks get more room. */
+  .post { padding-block: 2.5rem 4rem; max-width: 80rem; }
 
   .crumbs {
     display: flex;
@@ -157,11 +161,14 @@ const { title, description, pubDate, updatedDate, category, tags, cover } = post
     padding: 0;
   }
 
-  /* Two-column layout: article + sticky TOC. Collapses to one column on tablet. */
+  /* Two-column layout: article + sticky TOC. Columns are sized to their
+     content and centred so there's no large void between the prose and the
+     TOC. Collapses to one column on tablet. */
   .post-grid {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 16rem;
-    gap: 3rem;
+    grid-template-columns: minmax(0, 48rem) 16rem;
+    gap: 3.5rem;
+    justify-content: center;
     margin-top: 2.5rem;
     align-items: start;
   }
@@ -177,7 +184,7 @@ const { title, description, pubDate, updatedDate, category, tags, cover } = post
 
   /* Prose */
   .post-body {
-    max-width: 46rem;
+    max-width: 48rem;
     font-size: 1.05rem;
   }
   .post-body :global(h2) {
@@ -299,5 +306,13 @@ const { title, description, pubDate, updatedDate, category, tags, cover } = post
   @media (max-width: 40rem) {
     .post-nav { grid-template-columns: 1fr; }
     .post-nav-link.next { text-align: left; align-items: flex-start; }
+  }
+
+  /* Use more of the available width on large screens: widen the reading column
+     and TOC so code blocks and prose make better use of big displays. Placed
+     last so it overrides the base .post-body / .post-grid widths above. */
+  @media (min-width: 90rem) {
+    .post-grid { grid-template-columns: minmax(0, 52rem) 17rem; gap: 4rem; }
+    .post-body { max-width: 52rem; }
   }
 </style>
