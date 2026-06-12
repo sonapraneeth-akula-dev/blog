@@ -138,55 +138,54 @@ const { syncKey } = Astro.props;
   .tabs {
     display: block;
     margin: 1.5rem 0;
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    overflow: hidden;
-    background: var(--surface);
   }
-  .tablist {
+
+  /* The .tab buttons are created in the client script, so they never receive
+     Astro's scoped data-cid attribute — scoped selectors would silently miss
+     them (leaving the browser's default button chrome). These rules are global
+     but namespaced under .tabs to stay contained. */
+  :global(.tabs .tablist) {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.3rem;
-    padding: 0.4rem;
-    background: var(--bg-subtle);
+    gap: 0.25rem;
     border-bottom: 1px solid var(--border);
+    margin-bottom: 1rem;
   }
-  .tab {
+  :global(.tabs .tab) {
     display: inline-flex;
     align-items: center;
     gap: 0.4rem;
-    padding: 0.4rem 0.85rem;
-    border: 1px solid transparent;
-    border-radius: var(--radius-sm);
+    padding: 0.5rem 0.9rem;
+    border: none;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
     background: transparent;
     color: var(--text-muted);
     font-family: var(--font-sans);
-    font-size: 0.85rem;
+    font-size: 0.9rem;
     font-weight: 600;
     cursor: pointer;
-    transition: color 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+    transition: color 0.15s ease, border-color 0.15s ease;
   }
-  .tab:hover { color: var(--text); background: var(--surface); }
-  .tab.active {
+  :global(.tabs .tab:hover) { color: var(--text); }
+  :global(.tabs .tab.active) {
     color: var(--accent-text);
-    background: var(--surface);
-    border-color: var(--border);
+    border-bottom-color: var(--accent);
   }
-  .tab-icon { display: inline-flex; }
+  :global(.tabs .tab-icon) { display: inline-flex; }
 
-  .tab-panels { padding: 1rem; }
+  .tab-panels { display: block; }
   .tab-panel { display: block; }
 
-  /* Render code inside tabs as plain content on a background: drop Expressive
-     Code's terminal window chrome (the three "traffic light" dots / header bar)
-     and its own outer margin/shadow so the block sits flush within the panel.
-     `.tab-panel` is rendered by TabItem.astro, so these selectors must be
-     fully global to escape this component's scope. EC's own header rule has
-     equal specificity and loads later, so !important is needed to win. */
+  /* Render code inside tabs as plain content with no window chrome: drop
+     Expressive Code's terminal header (the three "traffic light" dots / header
+     bar) so commands read cleanly. `.tab-panel` is rendered by TabItem.astro,
+     so these selectors must be fully global to escape this component's scope.
+     EC's own header rule has equal specificity and loads later, so !important
+     is needed to win. */
   :global(.tab-panel .expressive-code .frame .header) { display: none !important; }
   :global(.tab-panel .expressive-code .frame.is-terminal pre) { padding-top: 0.5rem; }
   :global(.tab-panel .expressive-code) { margin: 0; }
-  :global(.tab-panel .expressive-code .frame) { box-shadow: none; }
 
   /* Before hydration, show only the first panel to avoid a flash of all tabs. */
   .tab-panel:not(:first-child) { display: none; }
