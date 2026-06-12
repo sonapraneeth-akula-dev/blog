@@ -467,3 +467,36 @@ a.chip:hover {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Print / Save as PDF. Hide the site chrome and print the page in colour with
+   the same graphics as on screen (per-post layout tweaks live in BlogPost). */
+@media print {
+  html,
+  body {
+    background: var(--bg);
+    /* Keep backgrounds, accents and syntax highlighting in the PDF. */
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .skip-link,
+  .env-banner,
+  .site-header,
+  .site-footer,
+  .bottom-nav,
+  .reading-progress {
+    display: none !important;
+  }
+
+  /* The article spans the page; drop the on-screen width cap and centring. */
+  .container {
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    padding-inline: 0;
+  }
+
+  @page {
+    margin: 1.5cm;
+  }
+}

@@ -7,6 +7,7 @@ import TableOfContents from '@components/TableOfContents.astro';
 import ProgressBar from '@components/ProgressBar.astro';
 import CategoryIcon from '@components/CategoryIcon.astro';
 import TagIcon from '@components/TagIcon.astro';
+import Icon from '@components/Icon.astro';
 
 interface Props {
   post: Post;
@@ -61,6 +62,11 @@ const { title, description, pubDate, updatedDate, category, tags, cover } = post
           </li>
         ))}
       </ul>
+      <div class="post-actions" data-pagefind-ignore>
+        <button type="button" class="print-btn" data-print-post>
+          <Icon name="printer" /><span>Print / Save as PDF</span>
+        </button>
+      </div>
     </header>
 
     <div class="post-grid">
@@ -106,6 +112,14 @@ const { title, description, pubDate, updatedDate, category, tags, cover } = post
     )}
   </article>
 </BaseLayout>
+
+<script>
+  // "Print / Save as PDF" opens the browser print dialog; the @media print
+  // rules below pare the page down to the article and reorder the TOC first.
+  document
+    .querySelector('[data-print-post]')
+    ?.addEventListener('click', () => window.print());
+</script>
 
 <style>
   /* The post uses the full --container width. Readable text inside is capped to
@@ -322,5 +336,73 @@ const { title, description, pubDate, updatedDate, category, tags, cover } = post
      extra space while text stays at its readable measure. */
   @media (min-width: 90rem) {
     .post-grid { grid-template-columns: minmax(0, 1fr) 18rem; gap: 4.5rem; }
+  }
+
+  /* Print / Save-as-PDF action. */
+  .post-actions {
+    margin-top: 1.25rem;
+  }
+  .print-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.4rem 0.85rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: border-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+  }
+  .print-btn:hover {
+    border-color: var(--border-hover);
+    color: var(--accent-text);
+    transform: translateY(-1px);
+  }
+
+  /* Print / Save as PDF: keep only the article, with the table of contents
+     moved above the content. Colours and graphics are preserved (see the
+     global @media print block that sets print-color-adjust: exact). */
+  @media print {
+    .post { padding: 0; }
+    /* Chrome that doesn't belong in the PDF. */
+    .crumbs,
+    .post-lede,
+    .post-actions,
+    .post-foot,
+    .post-nav { display: none !important; }
+
+    /* Single column, TOC first. */
+    .post-grid {
+      display: flex;
+      flex-direction: column;
+      margin-top: 1.5rem;
+    }
+    .post-aside {
+      order: -1;
+      position: static;
+      margin-bottom: 2rem;
+      break-inside: avoid;
+    }
+
+    /* Let prose use the full width of the page. */
+    .post-body { font-size: 11pt; }
+    .post-body :global(p),
+    .post-body :global(ul),
+    .post-body :global(ol),
+    .post-body :global(blockquote),
+    .post-body :global(h2),
+    .post-body :global(h3),
+    .post-body :global(h4) { max-width: none; }
+
+    /* Avoid orphaned headings and split code blocks where possible. */
+    .post-body :global(h2),
+    .post-body :global(h3) { break-after: avoid; }
+    .post-body :global(pre),
+    .post-body :global(figure),
+    .post-body :global(table) { break-inside: avoid; }
   }
 </style>
