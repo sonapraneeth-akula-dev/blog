@@ -49,32 +49,55 @@
   --container: 70rem;
 }
 
-/* Layout width expansion on larger screens. Listing/home pages (card grids)
-   benefit directly from the extra width; reading pages cap themselves smaller
-   (see .post) so line length stays comfortable. Breakpoints target common
-   laptop/desktop/monitor widths so big screens don't waste a third of their
-   width on side margins. */
-@media (min-width: 1280px) {
+/* ─── Screen size breakpoints (shared reference with the homepage) ───
+   - Small Mobile:  ≤ 360px
+   - Big Mobile:    361–480px
+   - Small Tablet:  481–768px
+   - Big Tablet:    769–1024px
+   - Small Laptop:  1025–1280px
+   - Big Laptop:    1281–1440px
+   - Desktop:       1441–1920px
+   - Ultra HD:      1921–2560px
+   - 4K Display:    2561–3840px
+   - 8K Display:    ≥ 3841px
+
+   Layout width grows with the viewport so large screens don't waste a third of
+   their width on side margins. Listing/home pages (card grids) use the full
+   width directly; reading pages cap their text measure separately (see .post)
+   while letting code blocks fill the wider column. */
+
+/* Big Laptop */
+@media (min-width: 1281px) {
   :root {
-    --container: 78rem;
+    --container: 80rem;
   }
 }
 
-@media (min-width: 1536px) {
+/* Desktop */
+@media (min-width: 1441px) {
   :root {
-    --container: 88rem;
+    --container: 90rem;
   }
 }
 
-@media (min-width: 1920px) {
+/* Ultra HD */
+@media (min-width: 1921px) {
   :root {
-    --container: 100rem;
+    --container: 110rem;
   }
 }
 
-@media (min-width: 2560px) {
+/* 4K Display */
+@media (min-width: 2561px) {
   :root {
-    --container: 118rem;
+    --container: 140rem;
+  }
+}
+
+/* 8K Display */
+@media (min-width: 3841px) {
+  :root {
+    --container: 210rem;
   }
 }
 

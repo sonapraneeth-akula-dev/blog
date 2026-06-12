@@ -108,11 +108,11 @@ const { title, description, pubDate, updatedDate, category, tags, cover } = post
 </BaseLayout>
 
 <style>
-  /* Cap the reading layout independent of the global --container (which grows
-     wide on big screens for card grids). Keeps line length comfortable while
-     the prose + TOC block sits centred with no awkward dead gap between them.
-     The column widths step up on large screens so code blocks get more room. */
-  .post { padding-block: 2.5rem 4rem; max-width: 80rem; }
+  /* The post uses the full --container width. Readable text inside is capped to
+     a comfortable measure (see .post-body text children) while code blocks,
+     tables and images stretch to the full article column so large screens are
+     used well on this code-heavy blog. */
+  .post { padding-block: 2.5rem 4rem; }
 
   .crumbs {
     display: flex;
@@ -161,14 +161,12 @@ const { title, description, pubDate, updatedDate, category, tags, cover } = post
     padding: 0;
   }
 
-  /* Two-column layout: article + sticky TOC. Columns are sized to their
-     content and centred so there's no large void between the prose and the
-     TOC. Collapses to one column on tablet. */
+  /* Two-column layout: article fills the available width, sticky TOC on the
+     right. Collapses to one column on tablet. */
   .post-grid {
     display: grid;
-    grid-template-columns: minmax(0, 48rem) 16rem;
+    grid-template-columns: minmax(0, 1fr) 16rem;
     gap: 3.5rem;
-    justify-content: center;
     margin-top: 2.5rem;
     align-items: start;
   }
@@ -182,10 +180,21 @@ const { title, description, pubDate, updatedDate, category, tags, cover } = post
     .post-aside { position: static; order: -1; }
   }
 
-  /* Prose */
+  /* Prose. The body fills its column; individual text elements are capped to a
+     readable measure below, but code blocks, tables and images are free to use
+     the full width. */
   .post-body {
-    max-width: 48rem;
     font-size: 1.05rem;
+  }
+  /* Keep running text at a comfortable line length even when the column is wide. */
+  .post-body :global(p),
+  .post-body :global(ul),
+  .post-body :global(ol),
+  .post-body :global(blockquote),
+  .post-body :global(h2),
+  .post-body :global(h3),
+  .post-body :global(h4) {
+    max-width: 48rem;
   }
   .post-body :global(h2) {
     margin-top: 2.75rem;
@@ -308,11 +317,10 @@ const { title, description, pubDate, updatedDate, category, tags, cover } = post
     .post-nav-link.next { text-align: left; align-items: flex-start; }
   }
 
-  /* Use more of the available width on large screens: widen the reading column
-     and TOC so code blocks and prose make better use of big displays. Placed
-     last so it overrides the base .post-body / .post-grid widths above. */
+  /* Widen the sticky TOC and gap on large screens; the article column already
+     grows to fill the wider container, so code blocks make full use of the
+     extra space while text stays at its readable measure. */
   @media (min-width: 90rem) {
-    .post-grid { grid-template-columns: minmax(0, 52rem) 17rem; gap: 4rem; }
-    .post-body { max-width: 52rem; }
+    .post-grid { grid-template-columns: minmax(0, 1fr) 18rem; gap: 4.5rem; }
   }
 </style>
