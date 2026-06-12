@@ -10,7 +10,20 @@
     "build": "astro build && pagefind --site dist",
     "search:index": "astro build && pagefind --site dist --output-path public/pagefind",
     "preview": "astro preview --host 0.0.0.0 --port 4322",
-    "check": "astro check"
+    "check": "astro check",
+    "watch:content": "bun run scripts/watch-content.ts",
+    "hosts:setup": "pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/setup-hosts.ps1",
+    "hosts:remove": "pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/setup-hosts.ps1 -Remove",
+    "certs:setup": "pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/setup-certs.ps1",
+    "certs:remove": "pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/setup-certs.ps1 -Remove",
+    "docker:dev": "bun run scripts/docker-compose.ts up dev caddy --build",
+    "docker:test": "bun run scripts/docker-compose.ts up test caddy --build -d",
+    "docker:ppe": "bun run scripts/docker-compose.ts up ppe caddy --build -d",
+    "docker:prod": "bun run scripts/docker-compose.ts up prod caddy --build -d",
+    "docker:up": "bun run scripts/docker-compose.ts up --build -d",
+    "docker:down": "bun run scripts/docker-compose.ts down",
+    "docker:logs": "bun run scripts/docker-compose.ts logs -f",
+    "deploy": "bun run scripts/docker-compose.ts up prod caddy --build -d"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.9",

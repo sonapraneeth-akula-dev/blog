@@ -6,9 +6,27 @@ import expressiveCode from 'astro-expressive-code';
 import { pluginLineNumbers } from '@expressive-code/plugin-line-numbers';
 import rehypeSlug from 'rehype-slug';
 import rehypeAutolinkHeadings from 'rehype-autolink-headings';
+import { execSync } from 'node:child_process';
 
 // Environment-aware site URL. Set PUBLIC_SITE_URL per environment (dev/test/ppe/prod).
 const site = process.env.PUBLIC_SITE_URL ?? 'http://localhost:4322';
+
+// Capture git info at build time. Falls back gracefully (e.g. when building in a
+// container without a .git directory) and honours CI-provided env vars.
+function git(command: string, fallback: string): string {
+  try {
+    return execSync(command, { stdio: ['ignore', 'pipe', 'ignore'] })
+      .toString()
+      .trim();
+  } catch {
+    return fallback;
+  }
+}
+
+const gitCommit =
+  process.env.GIT_COMMIT ?? git('git rev-parse --short HEAD', 'unknown');
+const gitBranch =
+  process.env.GIT_BRANCH ?? git('git rev-parse --abbrev-ref HEAD', 'unknown');
 
 export default defineConfig({
   site,
@@ -125,8 +143,22 @@ export default defineConfig({
     port: 4322,
   },
   vite: {
-    server: { allowedHosts: true },
+    server: {
+      allowedHosts: true,
+      // In Docker on Windows/macOS, bind-mounted host files don't forward
+      // inotify events into the Linux container, so HMR never sees edits.
+      // The dev container sets CHOKIDAR_USEPOLLING=true to fall back to polling.
+      watch: process.env.CHOKIDAR_USEPOLLING
+        ? { usePolling: true, interval: 1000 }
+        : undefined,
+    },
     preview: { allowedHosts: true },
+    // Build-time constants surfaced to the app (see src/env.d.ts).
+    define: {
+      __APP_ENV__: JSON.stringify(process.env.PUBLIC_APP_ENV ?? 'dev'),
+      __GIT_COMMIT__: JSON.stringify(gitCommit),
+      __GIT_BRANCH__: JSON.stringify(gitBranch),
+    },
     build: {
       rollupOptions: {
         // Pagefind's runtime is generated into /pagefind/ during the build step
