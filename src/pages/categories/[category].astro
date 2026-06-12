@@ -2,6 +2,7 @@
 import type { GetStaticPaths } from 'astro';
 import BaseLayout from '@layouts/BaseLayout.astro';
 import PostRow from '@components/PostRow.astro';
+import CategoryIcon from '@components/CategoryIcon.astro';
 import {
   getPublishedPosts,
   getCategories,
@@ -24,7 +25,7 @@ const { name, posts } = Astro.props as { name: string; posts: Post[] };
 <BaseLayout title={`${name} · Category`} description={`Posts in the ${name} category.`}>
   <div class="container page-head">
     <p class="eyebrow"><a href="/categories">Categories</a> /</p>
-    <h1>{name}</h1>
+    <h1 class="page-title"><CategoryIcon />{name}</h1>
     <p class="lede">{posts.length} {posts.length === 1 ? 'post' : 'posts'} in this category.</p>
   </div>
 
@@ -43,4 +44,10 @@ const { name, posts } = Astro.props as { name: string; posts: Post[] };
     padding-bottom: 2rem;
   }
   .page-head .eyebrow a { color: var(--accent-text); }
+  .page-title {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .page-title :global(.icon-category) { color: var(--accent-text); }
 </style>
