@@ -8,6 +8,15 @@ const { headings } = Astro.props;
 
 // Only surface h2/h3 — deeper levels make the rail noisy.
 const items = headings.filter((h) => h.depth >= 2 && h.depth <= 3);
+
+// Track each h3's parent h2 slug so an active sub-heading can also light up its
+// parent "main line" in the rail.
+let currentParent: string | undefined;
+const parentOf = new Map<string, string>();
+for (const h of items) {
+  if (h.depth === 2) currentParent = h.slug;
+  else if (h.depth === 3 && currentParent) parentOf.set(h.slug, currentParent);
+}
 ---
 
 {items.length > 0 && (
@@ -16,7 +25,11 @@ const items = headings.filter((h) => h.depth >= 2 && h.depth <= 3);
     <ul>
       {items.map((h) => (
         <li class:list={[`toc-l${h.depth}`]}>
-          <a href={`#${h.slug}`} data-toc-link={h.slug}>{h.text}</a>
+          <a
+            href={`#${h.slug}`}
+            data-toc-link={h.slug}
+            data-toc-parent={parentOf.get(h.slug)}
+          >{h.text}</a>
         </li>
       ))}
     </ul>
@@ -38,8 +51,13 @@ const items = headings.filter((h) => h.depth >= 2 && h.depth <= 3);
       (entries) => {
         for (const entry of entries) {
           if (entry.isIntersecting) {
-            links.forEach((l) => l.classList.remove('active'));
-            byId.get(entry.target.id)?.classList.add('active');
+            links.forEach((l) => l.classList.remove('active', 'parent-active'));
+            const active = byId.get(entry.target.id);
+            active?.classList.add('active');
+            // When a sub-heading is active, also light up its parent h2 so the
+            // "main line" stays highlighted alongside the nested entry.
+            const parentId = active?.dataset.tocParent;
+            if (parentId) byId.get(parentId)?.classList.add('parent-active');
           }
         }
       },
@@ -78,7 +96,8 @@ const items = headings.filter((h) => h.depth >= 2 && h.depth <= 3);
     transition: color 0.15s ease, border-color 0.15s ease;
   }
   .toc a:hover { color: var(--text); }
-  .toc a.active {
+  .toc a.active,
+  .toc a.parent-active {
     color: var(--accent-text);
     border-color: var(--accent);
     font-weight: 600;
@@ -93,6 +112,7 @@ const items = headings.filter((h) => h.depth >= 2 && h.depth <= 3);
       background: var(--surface);
     }
     .toc a { margin-left: 0; padding-left: 0.5rem; border-left: none; }
-    .toc a.active { border-left: none; }
+    .toc a.active,
+    .toc a.parent-active { border-left: none; }
   }
 </style>
