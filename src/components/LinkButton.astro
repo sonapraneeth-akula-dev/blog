@@ -40,6 +40,9 @@ const {
     display: inline-flex;
     align-items: center;
     gap: 0.45rem;
+    /* Buttons are commonly placed side by side; this keeps adjacent buttons
+       (and wrapped rows) from touching without needing a wrapper element. */
+    margin: 0 0.6rem 0.6rem 0;
     padding: 0.55rem 1.1rem;
     border: 1px solid transparent;
     border-radius: var(--radius-sm);
