@@ -471,6 +471,7 @@ a.chip:hover {
 /* Print / Save as PDF. Hide the site chrome and print the page in colour with
    the same graphics as on screen (per-post layout tweaks live in BlogPost). */
 @media print {
+
   html,
   body {
     /* Print on plain white paper — no page background tint or dot grid. */
@@ -497,6 +498,22 @@ a.chip:hover {
     max-width: none;
     margin: 0;
     padding-inline: 0;
+  }
+
+  /* Some print engines render the masked-gradient traffic-light dots with a
+     stray baseline beneath each circle. Repaint them as solid box-shadow
+     circles, which print cleanly with no underline artefact. */
+  .expressive-code .frame.is-terminal.is-terminal .header::before {
+    width: 0.55rem;
+    height: 0.55rem;
+    border-radius: 50%;
+    background-color: #ff5f56;
+    background-image: none;
+    -webkit-mask-image: none;
+    mask-image: none;
+    box-shadow:
+      0.78rem 0 0 #ffbd2e,
+      1.56rem 0 0 #27c93f;
   }
 
   @page {
