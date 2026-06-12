@@ -473,7 +473,9 @@ a.chip:hover {
 @media print {
   html,
   body {
-    background: var(--bg);
+    /* Print on plain white paper — no page background tint or dot grid. */
+    background: #fff;
+    background-image: none;
     /* Keep backgrounds, accents and syntax highlighting in the PDF. */
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
@@ -484,7 +486,8 @@ a.chip:hover {
   .site-header,
   .site-footer,
   .bottom-nav,
-  .reading-progress {
+  .reading-progress,
+  #screen-size-indicator {
     display: none !important;
   }
 
