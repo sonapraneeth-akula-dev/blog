@@ -27,7 +27,7 @@ const { text, variant = 'default', size = 'small', class: className, ...attrs } 
     --c: var(--accent);
     display: inline-block;
     border: 1px solid color-mix(in srgb, var(--c) 35%, transparent);
-    border-radius: 999px;
+    border-radius: var(--radius-sm);
     background: color-mix(in srgb, var(--c) 14%, var(--surface));
     color: color-mix(in srgb, var(--c) 75%, var(--text));
     font-family: var(--font-sans);
