@@ -65,5 +65,5 @@ COPY package.json astro.config.ts ./
 
 EXPOSE 4322
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-  CMD wget -q --spider http://localhost:4322/ || exit 1
+  CMD wget -q --spider http://127.0.0.1:4322/ || exit 1
 CMD ["bun", "run", "preview"]
