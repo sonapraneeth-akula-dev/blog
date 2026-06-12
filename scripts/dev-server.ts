@@ -1,4 +1,5 @@
 import { spawn, type ChildProcess } from 'node:child_process';
+import chokidar from 'chokidar';
 
 /**
  * Supervises the Astro dev server inside the dev container.
@@ -9,6 +10,14 @@ import { spawn, type ChildProcess } from 'node:child_process';
  * unreachable (so Caddy returns 502). This watchdog probes the HTTP port and,
  * if the server exits or stops responding, kills its process group and
  * relaunches it — so the dev site recovers without a manual `docker restart`.
+ *
+ * It also fixes new-file tracking. Astro's content-collection glob loader and
+ * route manifest only re-sync on EDITS to files they already know about; under
+ * bind-mount polling they miss brand-new (or deleted) files, so a new post
+ * never appears without a manual restart. We watch the glob-driven source dirs
+ * for structural changes (file/dir add or unlink) and restart the dev server,
+ * which re-scans collections and routes. Plain edits are left to Astro's own
+ * HMR, so normal editing is never interrupted.
  */
 
 const PORT = Number(process.env.PORT ?? 4322);
@@ -17,6 +26,12 @@ const PROBE_INTERVAL_MS = 5_000;
 const STARTUP_GRACE_MS = 30_000; // first boot + Vite dependency optimisation
 const MAX_FAILED_PROBES = 3; // ~15s unresponsive ⇒ treat as hung
 const RESTART_BACKOFF_MS = 1_000;
+
+// Source dirs whose file SET (not contents) Astro fails to re-scan under
+// bind-mount polling: content collections (glob loader) and routes (manifest).
+const STRUCTURE_WATCH_DIRS = ['src/content', 'src/pages'];
+const STRUCTURE_DEBOUNCE_MS = 600;
+const usePolling = Boolean(process.env.CHOKIDAR_USEPOLLING);
 
 let child: ChildProcess | null = null;
 let startedAt = 0;
@@ -89,5 +104,32 @@ function shutdown(): void {
 process.on('SIGTERM', shutdown);
 process.on('SIGINT', shutdown);
 
+/**
+ * Watch the glob-driven source dirs and restart the dev server when files are
+ * added or removed (the cases Astro misses under bind-mount polling). Edits
+ * fire `change`, which we ignore so Astro's HMR handles them uninterrupted.
+ */
+function watchStructure(): void {
+  let timer: ReturnType<typeof setTimeout> | null = null;
+  const onStructureChange = (path: string): void => {
+    if (timer) clearTimeout(timer);
+    timer = setTimeout(() => restart(`New/removed file detected (${path})`), STRUCTURE_DEBOUNCE_MS);
+  };
+
+  chokidar
+    .watch(STRUCTURE_WATCH_DIRS, { ignoreInitial: true, usePolling, interval: 1000 })
+    .on('add', onStructureChange)
+    .on('unlink', onStructureChange)
+    .on('addDir', onStructureChange)
+    .on('unlinkDir', onStructureChange)
+    .on('ready', () =>
+      console.log(
+        `[dev-server] Watching ${STRUCTURE_WATCH_DIRS.join(', ')} for new/removed files` +
+          (usePolling ? ' (polling @ 1000ms).' : '.'),
+      ),
+    );
+}
+
 start();
+watchStructure();
 setInterval(probe, PROBE_INTERVAL_MS);
