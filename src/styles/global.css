@@ -241,6 +241,17 @@ p {
   font-weight: 450;
 }
 
+/* Cap tall fenced code blocks so they scroll vertically instead of stretching
+   the page. The <pre> is Expressive Code's scroll container (it already scrolls
+   horizontally), so adding a max-height + overflow-y keeps long snippets compact
+   while line numbers, markers and the copy button continue to work. The extra
+   .frame class out-specifies EC's own `:not(:is(svg, svg *))` reset, which
+   otherwise reverts max-height. */
+.expressive-code .frame pre {
+  max-height: 32rem;
+  overflow-y: auto;
+}
+
 /* Card surface — shared border/background/hover for all card-like components.
    Padding is intentionally omitted so cards can host full-bleed media. */
 .card {
