@@ -3,6 +3,7 @@ import '../styles/global.css';
 import { Font } from 'astro:assets';
 import Header from '@components/Header.astro';
 import Footer from '@components/Footer.astro';
+import EnvBanner from '@components/EnvBanner.astro';
 import { siteConfig } from '@/config';
 
 interface Props {
@@ -26,6 +27,7 @@ const fullTitle = !title || title === siteConfig.title
   : `${title} · ${siteConfig.title}`;
 const canonical = new URL(Astro.url.pathname, Astro.site);
 const ogImageUrl = ogImage ? new URL(ogImage, Astro.site) : undefined;
+const appEnv = __APP_ENV__;
 ---
 
 <!doctype html>
@@ -67,6 +69,7 @@ const ogImageUrl = ogImage ? new URL(ogImage, Astro.site) : undefined;
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
+    <EnvBanner env={appEnv} />
     <Header />
     <main id="main">
       <slot />
