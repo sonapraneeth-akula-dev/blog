@@ -145,12 +145,28 @@ export default defineConfig({
   vite: {
     server: {
       allowedHosts: true,
-      // In Docker on Windows/macOS, bind-mounted host files don't forward
-      // inotify events into the Linux container, so HMR never sees edits.
-      // The dev container sets CHOKIDAR_USEPOLLING=true to fall back to polling.
-      watch: process.env.CHOKIDAR_USEPOLLING
-        ? { usePolling: true, interval: 1000 }
-        : undefined,
+      watch: {
+        // Never let build artifacts wake the dev server's config watcher. The
+        // dev container runs `astro build` repeatedly (watch:content refreshes
+        // the Pagefind index), which rewrites dist/.astro and drops Vite's
+        // transient `astro.config.*.timestamp-*.mjs` files in the project root.
+        // The running server would otherwise see those, log "Configuration file
+        // updated. Restarting…", and attempt an in-process restart that hangs
+        // under bind-mount polling and never rebinds the port (Caddy → 502).
+        ignored: [
+          '**/dist/**',
+          '**/.astro/**',
+          '**/public/pagefind/**',
+          '**/astro.config.*.timestamp-*',
+          '**/astro.config.timestamp-*',
+        ],
+        // In Docker on Windows/macOS, bind-mounted host files don't forward
+        // inotify events into the Linux container, so HMR never sees edits.
+        // The dev container sets CHOKIDAR_USEPOLLING=true to fall back to polling.
+        ...(process.env.CHOKIDAR_USEPOLLING
+          ? { usePolling: true, interval: 1000 }
+          : {}),
+      },
     },
     preview: { allowedHosts: true },
     // Build-time constants surfaced to the app (see src/env.d.ts).
