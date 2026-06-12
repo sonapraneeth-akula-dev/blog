@@ -262,6 +262,26 @@ p {
   overflow-y: auto;
 }
 
+/* Shrink Expressive Code's copy button. Its defaults (2.5rem touch target on
+   mobile, 2rem on pointer devices) feel oversized next to our compact frames.
+   The extra `.frame` class out-specifies EC's own `.copy button` rule, and the
+   icon margin is reduced proportionally so the glyph stays centred. */
+.expressive-code .frame .copy button {
+  width: 1.9rem;
+  height: 1.9rem;
+}
+
+@media (hover: hover) {
+  .expressive-code .frame .copy button {
+    width: 1.6rem;
+    height: 1.6rem;
+  }
+}
+
+.expressive-code .frame .copy button::after {
+  margin: 0.36rem;
+}
+
 /* Card surface — shared border/background/hover for all card-like components.
    Padding is intentionally omitted so cards can host full-bleed media. */
 .card {
