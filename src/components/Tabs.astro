@@ -146,8 +146,8 @@ const { syncKey } = Astro.props;
   .tablist {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.25rem;
-    padding: 0.4rem 0.4rem 0;
+    gap: 0.3rem;
+    padding: 0.4rem;
     background: var(--bg-subtle);
     border-bottom: 1px solid var(--border);
   }
@@ -155,30 +155,39 @@ const { syncKey } = Astro.props;
     display: inline-flex;
     align-items: center;
     gap: 0.4rem;
-    padding: 0.5rem 0.9rem;
+    padding: 0.4rem 0.85rem;
     border: 1px solid transparent;
-    border-bottom: none;
-    border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+    border-radius: var(--radius-sm);
     background: transparent;
     color: var(--text-muted);
     font-family: var(--font-sans);
-    font-size: 0.88rem;
+    font-size: 0.85rem;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.15s ease;
+    transition: color 0.15s ease, background 0.15s ease, border-color 0.15s ease;
   }
   .tab:hover { color: var(--text); background: var(--surface); }
   .tab.active {
     color: var(--accent-text);
     background: var(--surface);
     border-color: var(--border);
-    border-bottom-color: var(--surface);
-    margin-bottom: -1px;
   }
   .tab-icon { display: inline-flex; }
-  .tab-panels { padding: 0 1rem; }
-  /* Expressive Code blocks inside panels already have their own margins. */
-  .tab-panel { padding-block: 0.25rem; }
+
+  .tab-panels { padding: 1rem; }
+  .tab-panel { display: block; }
+
+  /* Render code inside tabs as plain content on a background: drop Expressive
+     Code's terminal window chrome (the three "traffic light" dots / header bar)
+     and its own outer margin/shadow so the block sits flush within the panel.
+     `.tab-panel` is rendered by TabItem.astro, so these selectors must be
+     fully global to escape this component's scope. EC's own header rule has
+     equal specificity and loads later, so !important is needed to win. */
+  :global(.tab-panel .expressive-code .frame .header) { display: none !important; }
+  :global(.tab-panel .expressive-code .frame.is-terminal pre) { padding-top: 0.5rem; }
+  :global(.tab-panel .expressive-code) { margin: 0; }
+  :global(.tab-panel .expressive-code .frame) { box-shadow: none; }
+
   /* Before hydration, show only the first panel to avoid a flash of all tabs. */
   .tab-panel:not(:first-child) { display: none; }
   .tab-panel[hidden] { display: none !important; }
