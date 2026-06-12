@@ -42,7 +42,7 @@
      (cards, chips, buttons, inputs, code blocks). Set it to 0 for sharp
      corners, or raise it (e.g. 20px) for a softer, rounder look. The sm/lg
      steps scale with it automatically. */
-  --radius-base: 14px;
+  --radius-base: 0.5rem;
   --radius-sm: calc(var(--radius-base) * 0.55);
   --radius: var(--radius-base);
   --radius-lg: calc(var(--radius-base) * 1.7);
