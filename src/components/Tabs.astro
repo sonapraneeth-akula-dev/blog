@@ -177,16 +177,6 @@ const { syncKey } = Astro.props;
   .tab-panels { display: block; }
   .tab-panel { display: block; }
 
-  /* Render code inside tabs as plain content with no window chrome: drop
-     Expressive Code's terminal header (the three "traffic light" dots / header
-     bar) so commands read cleanly. `.tab-panel` is rendered by TabItem.astro,
-     so these selectors must be fully global to escape this component's scope.
-     EC's own header rule has equal specificity and loads later, so !important
-     is needed to win. */
-  :global(.tab-panel .expressive-code .frame .header) { display: none !important; }
-  :global(.tab-panel .expressive-code .frame.is-terminal pre) { padding-top: 0.5rem; }
-  :global(.tab-panel .expressive-code) { margin: 0; }
-
   /* Before hydration, show only the first panel to avoid a flash of all tabs. */
   .tab-panel:not(:first-child) { display: none; }
   .tab-panel[hidden] { display: none !important; }
