@@ -125,7 +125,7 @@ function watchStructure(): void {
     .on('ready', () =>
       console.log(
         `[dev-server] Watching ${STRUCTURE_WATCH_DIRS.join(', ')} for new/removed files` +
-          (usePolling ? ' (polling @ 1000ms).' : '.'),
+        (usePolling ? ' (polling @ 1000ms).' : '.'),
       ),
     );
 }
