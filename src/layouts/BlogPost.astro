@@ -12,9 +12,11 @@ interface Props {
   post: Post;
   headings: MarkdownHeading[];
   readingTime: string;
+  newerPost?: Post | null;
+  olderPost?: Post | null;
 }
 
-const { post, headings, readingTime } = Astro.props;
+const { post, headings, readingTime, newerPost, olderPost } = Astro.props;
 const { title, description, pubDate, updatedDate, category, tags, cover } = post.data;
 ---
 
@@ -81,6 +83,27 @@ const { title, description, pubDate, updatedDate, category, tags, cover } = post
         Subscribe via RSS
       </a>
     </footer>
+
+    {(olderPost || newerPost) && (
+      <nav class="post-nav" aria-label="More posts" data-pagefind-ignore>
+        {olderPost ? (
+          <a class="post-nav-link prev" href={`/blog/${olderPost.id}`} rel="prev">
+            <span class="post-nav-dir">← Previous post</span>
+            <span class="post-nav-title">{olderPost.data.title}</span>
+          </a>
+        ) : (
+          <span class="post-nav-spacer"></span>
+        )}
+        {newerPost ? (
+          <a class="post-nav-link next" href={`/blog/${newerPost.id}`} rel="next">
+            <span class="post-nav-dir">Next post →</span>
+            <span class="post-nav-title">{newerPost.data.title}</span>
+          </a>
+        ) : (
+          <span class="post-nav-spacer"></span>
+        )}
+      </nav>
+    )}
   </article>
 </BaseLayout>
 
@@ -232,4 +255,49 @@ const { title, description, pubDate, updatedDate, category, tags, cover } = post
     justify-content: space-between;
   }
   .btn-rss { display: inline-flex; align-items: center; gap: 0.45rem; }
+
+  /* Previous / next post navigation. */
+  .post-nav {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-top: 1.5rem;
+  }
+  .post-nav-link {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    padding: 1rem 1.25rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    text-decoration: none;
+    transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .post-nav-link:hover {
+    border-color: var(--border-hover);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.04);
+  }
+  .post-nav-link.next { text-align: right; align-items: flex-end; }
+  .post-nav-link.prev:hover { transform: translateX(-2px); }
+  .post-nav-link.next:hover { transform: translateX(2px); }
+  .post-nav-dir {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--accent-text);
+  }
+  .post-nav-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.3;
+  }
+  .post-nav-spacer { display: none; }
+
+  @media (max-width: 40rem) {
+    .post-nav { grid-template-columns: 1fr; }
+    .post-nav-link.next { text-align: left; align-items: flex-start; }
+  }
 </style>
