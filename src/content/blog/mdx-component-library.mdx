@@ -122,20 +122,48 @@ Variants: `note`, `tip`, `caution`, `danger`, `success`, `default`. Sizes:
 
 `<LinkButton>` is a call-to-action link styled as a button. Use `variant` for
 prominence and `icon` (with optional `iconPlacement`) for a leading or trailing
-glyph.
+glyph. `icon` takes either a named icon (e.g. `external`, `github`) or an emoji.
+External links open in a new tab automatically.
 
 <LinkButton href="/blog/">Read the blog</LinkButton>
-<LinkButton href="https://astro.build" variant="secondary" icon="↗" iconPlacement="start">Astro docs</LinkButton>
+<LinkButton href="https://astro.build" variant="secondary" icon="external" iconPlacement="end">Astro docs</LinkButton>
+<LinkButton href="https://github.com" variant="secondary" icon="github" iconPlacement="start">Star on GitHub</LinkButton>
 <LinkButton href="/" variant="minimal">Back home</LinkButton>
 
 ```mdx
 <LinkButton href="/blog/">Read the blog</LinkButton>
-<LinkButton href="https://astro.build" variant="secondary" icon="↗" iconPlacement="start">
+<LinkButton href="https://astro.build" variant="secondary" icon="external" iconPlacement="end">
   Astro docs
+</LinkButton>
+<LinkButton href="https://github.com" variant="secondary" icon="github" iconPlacement="start">
+  Star on GitHub
 </LinkButton>
 ```
 
 Variants: `primary` (default), `secondary`, `minimal`.
+
+## Icons
+
+`<Icon>` renders a named icon from the curated set. The same names work in any
+`icon` prop (e.g. on `<LinkButton>` and `<Card>`). Pass a `label` for a
+meaningful standalone icon, or leave it decorative.
+
+<p>
+  <Icon name="external" /> <Icon name="link" /> <Icon name="arrow-right" />
+  <Icon name="github" /> <Icon name="rss" /> <Icon name="mail" />
+  <Icon name="book" /> <Icon name="rocket" /> <Icon name="star" />
+  <Icon name="heart" /> <Icon name="info" /> <Icon name="check" />
+  <Icon name="pencil" />
+</p>
+
+```mdx
+<Icon name="rocket" />
+<Icon name="github" label="GitHub" size="1.5rem" />
+```
+
+Available: `external`, `link`, `arrow-right`, `arrow-left`, `arrow-up`,
+`arrow-down`, `github`, `rss`, `mail`, `book`, `rocket`, `star`, `heart`,
+`info`, `check`, `pencil`.
 
 ## Steps
 

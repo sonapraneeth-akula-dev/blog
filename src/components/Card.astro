@@ -1,22 +1,30 @@
 ---
 /**
  * Content card with a title and optional leading icon. Group several inside
- * <CardGrid>. `icon` takes inline HTML or an emoji (we don't bundle an icon
- * set), e.g. icon="📦" — matching the pattern used by <TabItem>.
+ * <CardGrid>. `icon` accepts either a named icon from the curated set (e.g.
+ * icon="rocket") or inline HTML / an emoji (e.g. icon="📦").
  *
- *   <Card title="Fast by default" icon="⚡">Built on Astro's islands.</Card>
+ *   <Card title="Fast by default" icon="rocket">Built on Astro's islands.</Card>
  */
+import Icon from './Icon.astro';
+import { isIconName } from './icons';
+
 interface Props {
   title: string;
   icon?: string;
 }
 
 const { title, icon } = Astro.props;
+const iconName = icon && isIconName(icon) ? icon : undefined;
 ---
 
 <article class="card-box">
   <p class="card-box-title">
-    {icon && <span class="card-box-icon" aria-hidden="true" set:html={icon} />}
+    {icon && (
+      iconName
+        ? <span class="card-box-icon"><Icon name={iconName} /></span>
+        : <span class="card-box-icon" aria-hidden="true" set:html={icon} />
+    )}
     <span>{title}</span>
   </p>
   <div class="card-box-body"><slot /></div>

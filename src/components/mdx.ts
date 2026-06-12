@@ -22,6 +22,7 @@ import Badge from './Badge.astro';
 import LinkButton from './LinkButton.astro';
 import Steps from './Steps.astro';
 import FileTree from './FileTree.astro';
+import Icon from './Icon.astro';
 import { Code } from 'astro-expressive-code/components';
 
 export {
@@ -35,6 +36,7 @@ export {
   LinkButton,
   Steps,
   FileTree,
+  Icon,
   Code,
 };
 
@@ -50,5 +52,6 @@ export const mdxComponents = {
   LinkButton,
   Steps,
   FileTree,
+  Icon,
   Code,
 };

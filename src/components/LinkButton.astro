@@ -1,14 +1,17 @@
 ---
 /**
- * Call-to-action link styled as a button. `icon` takes inline HTML or an emoji
- * (we don't bundle an icon set). Accepts any extra <a> attributes.
+ * Call-to-action link styled as a button. `icon` accepts either a named icon
+ * from the curated set (e.g. icon="external", icon="github") or inline HTML /
+ * an emoji (e.g. icon="↗"). Accepts any extra <a> attributes.
  *
  *   <LinkButton href="/blog/">Read the blog</LinkButton>
- *   <LinkButton href="https://astro.build" variant="secondary" icon="↗" iconPlacement="start">
+ *   <LinkButton href="https://astro.build" variant="secondary" icon="external">
  *     Astro docs
  *   </LinkButton>
  */
 import type { HTMLAttributes } from 'astro/types';
+import Icon from './Icon.astro';
+import { isIconName } from './icons';
 
 type Variant = 'primary' | 'secondary' | 'minimal';
 
@@ -27,12 +30,31 @@ const {
   class: className,
   ...attrs
 } = Astro.props;
+
+// Resolve `icon` to a named icon when it matches the curated set; otherwise
+// fall back to treating it as inline text/emoji markup.
+const iconName = icon && isIconName(icon) ? icon : undefined;
+
+// External links (anything with a scheme like https: or mailto:) open in a new
+// tab by default, with rel="noopener noreferrer" for safety. Callers can still
+// override target/rel explicitly via props.
+const isExternal = /^[a-z]+:/i.test(href);
+const target = attrs.target ?? (isExternal ? '_blank' : undefined);
+const rel = attrs.rel ?? (isExternal ? 'noopener noreferrer' : undefined);
 ---
 
-<a href={href} class:list={['link-button', `link-button--${variant}`, className]} {...attrs}>
-  {icon && iconPlacement === 'start' && <span class="link-button-icon" aria-hidden="true" set:html={icon} />}
+<a href={href} class:list={['link-button', `link-button--${variant}`, className]} {...attrs} target={target} rel={rel}>
+  {icon && iconPlacement === 'start' && (
+    iconName
+      ? <span class="link-button-icon"><Icon name={iconName} /></span>
+      : <span class="link-button-icon" aria-hidden="true" set:html={icon} />
+  )}
   <span><slot /></span>
-  {icon && iconPlacement === 'end' && <span class="link-button-icon" aria-hidden="true" set:html={icon} />}
+  {icon && iconPlacement === 'end' && (
+    iconName
+      ? <span class="link-button-icon"><Icon name={iconName} /></span>
+      : <span class="link-button-icon" aria-hidden="true" set:html={icon} />
+  )}
 </a>
 
 <style>
@@ -79,6 +101,14 @@ const {
   }
   .link-button--minimal:hover {
     text-decoration: underline;
+  }
+
+  /* The post layout underlines all prose links. Primary and secondary buttons
+     should read as buttons (no underline); the minimal variant stays underlined
+     as a text link. The doubled class raises specificity above `.post-body a`. */
+  .link-button--primary.link-button--primary,
+  .link-button--secondary.link-button--secondary {
+    text-decoration: none;
   }
 
   .link-button-icon {
