@@ -3,21 +3,15 @@
   "compilerOptions": {
     "types": [
       "node"
-    ],
-    // `baseUrl` is deprecated as of TS 6; modern TypeScript resolves the path
-    // aliases below relative to this tsconfig's location, so it isn't needed.
-    "paths": {
-      "@/*": [
-        "./src/*"
-      ],
-      "@components/*": [
-        "./src/components/*"
-      ],
-      "@layouts/*": [
-        "./src/layouts/*"
-      ]
-    }
-  }
+    ]
+  },
+  // The blog only consumes specific packages from the sparse submodule (resolved
+  // via node_modules). Exclude the submodule tree itself so `astro check` does
+  // not type-check unrelated engines (e.g. notes-core) shipped alongside it.
+  "exclude": [
+    "${configDir}/dist",
+    "${configDir}/dependencies"
+  ]
   // `include`/`exclude` are inherited from astro/tsconfigs/strict, which already
   // globs the project (`${configDir}/**/*`), pulls in `.astro/types.d.ts` and
   // excludes `dist`. Re-declaring them here only narrowed that coverage.
