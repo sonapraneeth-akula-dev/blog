@@ -1,0 +1,5 @@
+[submodule "dependencies/packages_astro"]
+	path = dependencies/packages_astro
+	url = https://github.com/sonapraneeth-akula-dev/packages_astro
+	branch = main
+	shallow = true
