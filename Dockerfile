@@ -9,7 +9,11 @@ ENV NODE_ENV=production
 # ─── Dependencies ────────────────────────────────────────────────────────────
 # Install all dependencies (including dev) for building and previewing.
 FROM base AS deps
+# The blog consumes @grihasetu/blog-core from the sparse git submodule under
+# dependencies/. bun needs each workspace package's manifest present to resolve
+# the `workspace:*` links, so copy the submodule before installing.
 COPY package.json bun.lock* ./
+COPY dependencies ./dependencies
 RUN bun install --frozen-lockfile
 
 # ─── Development ─────────────────────────────────────────────────────────────
@@ -58,10 +62,13 @@ ARG PUBLIC_SITE_URL=https://blog.sonapraneeth.in
 ENV PUBLIC_APP_ENV=${PUBLIC_APP_ENV}
 ENV PUBLIC_SITE_URL=${PUBLIC_SITE_URL}
 
-# Only the artifacts needed to preview the build.
+# Only the artifacts needed to preview the build. `astro preview` re-evaluates
+# astro.config.ts, which imports blog.config.ts and the @grihasetu/blog-core
+# package (symlinked into node_modules from dependencies/), so both must ship.
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=build /app/dist ./dist
-COPY package.json astro.config.ts ./
+COPY --from=build /app/dependencies ./dependencies
+COPY package.json astro.config.ts blog.config.ts ./
 
 EXPOSE 4322
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \

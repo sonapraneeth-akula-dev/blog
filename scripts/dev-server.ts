@@ -28,8 +28,9 @@ const MAX_FAILED_PROBES = 3; // ~15s unresponsive ⇒ treat as hung
 const RESTART_BACKOFF_MS = 1_000;
 
 // Source dirs whose file SET (not contents) Astro fails to re-scan under
-// bind-mount polling: content collections (glob loader) and routes (manifest).
-const STRUCTURE_WATCH_DIRS = ['src/content', 'src/pages'];
+// bind-mount polling: the content collection (glob loader). Page routes are
+// injected by the @grihasetu/blog-core engine, so there is no src/pages.
+const STRUCTURE_WATCH_DIRS = ['src/content'];
 const STRUCTURE_DEBOUNCE_MS = 600;
 const usePolling = Boolean(process.env.CHOKIDAR_USEPOLLING);
 
