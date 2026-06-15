@@ -1,6 +1,6 @@
 import { postsCollection } from '@grihasetu/blog-core/content';
 
 export const collections = {
-  // Posts live under `src/content/blog`.
-  blog: postsCollection('./src/content/blog'),
+  // Posts live under the top-level `content/` directory.
+  blog: postsCollection('./content'),
 };

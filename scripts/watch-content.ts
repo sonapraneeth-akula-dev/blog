@@ -14,7 +14,7 @@ import chokidar from 'chokidar';
  * so polling is used when CHOKIDAR_USEPOLLING is set (matching Vite's watcher).
  */
 
-const WATCH_GLOB = 'src/content';
+const WATCH_GLOB = 'content';
 const DEBOUNCE_MS = 1500;
 const usePolling = Boolean(process.env.CHOKIDAR_USEPOLLING);
 

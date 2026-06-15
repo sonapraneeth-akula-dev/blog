@@ -51,7 +51,7 @@ whenever content changes; a full `bun run build` regenerates it for production.
 
 ## Authoring posts
 
-Add a `.md` or `.mdx` file under `src/content/blog/`:
+Add a `.md` or `.mdx` file under `content/`:
 
 ```mdx
 ---
