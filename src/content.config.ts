@@ -1,23 +1,6 @@
-import { defineCollection } from 'astro:content';
-import { glob } from 'astro/loaders';
-import { z } from 'astro/zod';
+import { postsCollection } from '@grihasetu/blog-core/content';
 
-const blog = defineCollection({
-  loader: glob({ pattern: '**/*.{md,mdx}', base: './src/content/blog' }),
-  schema: z.object({
-    title: z.string(),
-    description: z.string(),
-    pubDate: z.coerce.date(),
-    updatedDate: z.coerce.date().optional(),
-    /** Each post belongs to exactly one category. */
-    category: z.string(),
-    /** Each post can carry multiple tags. */
-    tags: z.array(z.string()).default([]),
-    /** Hide from listings while drafting. */
-    draft: z.boolean().default(false),
-    /** Optional accent emoji/glyph shown on cards when no hero image. */
-    cover: z.string().optional(),
-  }),
-});
-
-export const collections = { blog };
+export const collections = {
+  // Posts live under `src/content/blog`.
+  blog: postsCollection('./src/content/blog'),
+};
