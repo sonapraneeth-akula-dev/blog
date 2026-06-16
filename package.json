@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "private": true,
   "packageManager": "bun@1.3.14",
-  "description": "Grihasetu blog built with Astro + MDX, powered by the @grihasetu/blog-core engine (categories, tags, offline search, synced code tabs)",
+  "description": "Grihasetu blog built with Astro + MDX, powered by the @sonapraneeth/blog-core engine (categories, tags, offline search, synced code tabs)",
   "workspaces": [
     "dependencies/packages_astro/packages/blog-core",
     "dependencies/packages_astro/packages/components",
@@ -32,7 +32,7 @@
     "deploy": "bun run scripts/docker-compose.ts up prod caddy --build -d"
   },
   "dependencies": {
-    "@grihasetu/blog-core": "workspace:*",
+    "@sonapraneeth/blog-core": "workspace:*",
     "astro": "^6.4.6"
   },
   "devDependencies": {

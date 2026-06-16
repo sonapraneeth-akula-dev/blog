@@ -5,7 +5,7 @@
     "": {
       "name": "@grihasetu/blog",
       "dependencies": {
-        "@grihasetu/blog-core": "workspace:*",
+        "@sonapraneeth/blog-core": "workspace:*",
         "astro": "^6.4.6",
       },
       "devDependencies": {
@@ -17,14 +17,14 @@
       },
     },
     "dependencies/packages_astro/packages/blog-core": {
-      "name": "@grihasetu/blog-core",
-      "version": "0.1.0",
+      "name": "@sonapraneeth/blog-core",
+      "version": "1.1.0",
       "dependencies": {
         "@astrojs/rss": "^4.0.12",
         "@astrojs/sitemap": "^3.7.3",
         "@expressive-code/plugin-line-numbers": "^0.43.1",
-        "@grihasetu/components": "workspace:*",
-        "@grihasetu/rehype-satteri-autolink-headings": "workspace:*",
+        "@sonapraneeth/components": "workspace:*",
+        "@sonapraneeth/rehype-satteri-autolink-headings": "workspace:*",
         "astro": "^6.4.6",
         "astro-expressive-code": "^0.43.1",
       },
@@ -34,8 +34,8 @@
       },
     },
     "dependencies/packages_astro/packages/components": {
-      "name": "@grihasetu/components",
-      "version": "0.1.0",
+      "name": "@sonapraneeth/components",
+      "version": "1.0.0",
       "dependencies": {
         "astro": "^6.4.6",
       },
@@ -45,8 +45,8 @@
       },
     },
     "dependencies/packages_astro/packages/plugins/satteri": {
-      "name": "@grihasetu/rehype-satteri-autolink-headings",
-      "version": "0.1.0",
+      "name": "@sonapraneeth/rehype-satteri-autolink-headings",
+      "version": "1.0.0",
       "dependencies": {
         "@astrojs/markdown-remark": "^7.2.0",
         "@astrojs/mdx": "^6.0.3",
@@ -179,12 +179,6 @@
     "@expressive-code/plugin-shiki": ["@expressive-code/plugin-shiki@0.43.1", "", { "dependencies": { "@expressive-code/core": "^0.43.1", "shiki": "^4.0.2" } }, "sha512-NdceinYEROXODNgB/ix+7oCdIg+nGyok+E+p2lU9YlWd1xKshXdXpmmptKfkuU27MJ5jjnfhMCI78YYBGi9GtQ=="],
 
     "@expressive-code/plugin-text-markers": ["@expressive-code/plugin-text-markers@0.43.1", "", { "dependencies": { "@expressive-code/core": "^0.43.1" } }, "sha512-JWf8wdbZSNoGY4TFv3lmt3/NNDaCP7iYL6rRYD05g8YYjKL62hKUHLl5+B47+v0+bqbuMhXDN7qz2wywFUvMkg=="],
-
-    "@grihasetu/blog-core": ["@grihasetu/blog-core@workspace:dependencies/packages_astro/packages/blog-core"],
-
-    "@grihasetu/components": ["@grihasetu/components@workspace:dependencies/packages_astro/packages/components"],
-
-    "@grihasetu/rehype-satteri-autolink-headings": ["@grihasetu/rehype-satteri-autolink-headings@workspace:dependencies/packages_astro/packages/plugins/satteri"],
 
     "@img/colour": ["@img/colour@1.1.0", "", {}, "sha512-Td76q7j57o/tLVdgS746cYARfSyxk8iEfRxewL9h4OMzYhbW4TAcppl0mT4eyqXddh6L/jwoM75mo7ixa/pCeQ=="],
 
@@ -325,6 +319,12 @@
     "@shikijs/types": ["@shikijs/types@4.2.0", "", { "dependencies": { "@shikijs/vscode-textmate": "^10.0.2", "@types/hast": "^3.0.4" } }, "sha512-VT/MKtlpOhEPZloSH3Pb9WCZEBDoQVMa9jedp5UAwmJOar1DVc9DRODAxmYPW9M93IK4ryuqRejFfmlvlVDemw=="],
 
     "@shikijs/vscode-textmate": ["@shikijs/vscode-textmate@10.0.2", "", {}, "sha512-83yeghZ2xxin3Nj8z1NMd/NCuca+gsYXswywDy5bHvwlWL8tpTQmzGeUuHd9FC3E/SBEMvzJRwWEOz5gGes9Qg=="],
+
+    "@sonapraneeth/blog-core": ["@sonapraneeth/blog-core@workspace:dependencies/packages_astro/packages/blog-core"],
+
+    "@sonapraneeth/components": ["@sonapraneeth/components@workspace:dependencies/packages_astro/packages/components"],
+
+    "@sonapraneeth/rehype-satteri-autolink-headings": ["@sonapraneeth/rehype-satteri-autolink-headings@workspace:dependencies/packages_astro/packages/plugins/satteri"],
 
     "@types/debug": ["@types/debug@4.1.13", "", { "dependencies": { "@types/ms": "*" } }, "sha512-KSVgmQmzMwPlmtljOomayoR89W4FynCAi3E8PPs7vmDVPe84hT+vGPKkJfThkmXs0x0jAaa9U8uW8bbfyS2fWw=="],
 
