@@ -9,7 +9,7 @@ ENV NODE_ENV=production
 # ─── Dependencies ────────────────────────────────────────────────────────────
 # Install all dependencies (including dev) for building and previewing.
 FROM base AS deps
-# The blog consumes @grihasetu/blog-core from the sparse git submodule under
+# The blog consumes @sonapraneeth/blog-core from the sparse git submodule under
 # dependencies/. bun needs each workspace package's manifest present to resolve
 # the `workspace:*` links, so copy the submodule before installing.
 COPY package.json bun.lock* ./
@@ -63,7 +63,7 @@ ENV PUBLIC_APP_ENV=${PUBLIC_APP_ENV}
 ENV PUBLIC_SITE_URL=${PUBLIC_SITE_URL}
 
 # Only the artifacts needed to preview the build. `astro preview` re-evaluates
-# astro.config.ts, which imports blog.config.ts and the @grihasetu/blog-core
+# astro.config.ts, which imports blog.config.ts and the @sonapraneeth/blog-core
 # package (symlinked into node_modules from dependencies/), so both must ship.
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=build /app/dist ./dist
