@@ -31,6 +31,12 @@ const RESTART_BACKOFF_MS = 1_000;
 // bind-mount polling: the content collection (glob loader). Page routes are
 // injected by the @sonapraneeth/blog-core engine, so there is no src/pages.
 const STRUCTURE_WATCH_DIRS = ['content'];
+// Config files whose CONTENTS feed the Astro config (branding, nav, theme,
+// fonts). Astro restarts the dev server in-process when these change, but under
+// bind-mount polling that event is missed entirely, so an edit never takes
+// effect. We watch them here and force a full restart on any change so theme /
+// branding edits show up without a manual `docker restart`.
+const CONFIG_WATCH_FILES = ['blog.config.ts', 'astro.config.ts'];
 const STRUCTURE_DEBOUNCE_MS = 600;
 const usePolling = Boolean(process.env.CHOKIDAR_USEPOLLING);
 
@@ -131,6 +137,33 @@ function watchStructure(): void {
     );
 }
 
+/**
+ * Watch the Astro config files and restart the dev server when they are edited.
+ * Unlike content, we react to `change` (not just add/unlink) because it is the
+ * file CONTENTS — branding, nav, theme, fonts — that must be re-evaluated, and
+ * Astro's own config-change restart is missed under bind-mount polling.
+ */
+function watchConfig(): void {
+  let timer: ReturnType<typeof setTimeout> | null = null;
+  const onConfigChange = (path: string): void => {
+    if (timer) clearTimeout(timer);
+    timer = setTimeout(() => restart(`Config changed (${path})`), STRUCTURE_DEBOUNCE_MS);
+  };
+
+  chokidar
+    .watch(CONFIG_WATCH_FILES, { ignoreInitial: true, usePolling, interval: 1000 })
+    .on('add', onConfigChange)
+    .on('change', onConfigChange)
+    .on('unlink', onConfigChange)
+    .on('ready', () =>
+      console.log(
+        `[dev-server] Watching ${CONFIG_WATCH_FILES.join(', ')} for config edits` +
+        (usePolling ? ' (polling @ 1000ms).' : '.'),
+      ),
+    );
+}
+
 start();
 watchStructure();
+watchConfig();
 setInterval(probe, PROBE_INTERVAL_MS);
