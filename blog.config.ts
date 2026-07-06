@@ -15,6 +15,9 @@ const ICON_SEARCH =
  * social links.
  */
 export const blogConfig = defineBlogConfig({
+  // Numbered-block / figure caption alignment (Algorithm, Listing, DocImage).
+  // Posts can override per kind via the `captionAlign` frontmatter field.
+  captionAlign: { default: 'center' },
   brand: 'Grihasetu',
   title: 'Grihasetu Blog',
   description:
