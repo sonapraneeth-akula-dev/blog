@@ -1,0 +1,183 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="900" viewBox="0 0 1400 900" role="img">
+  <foreignObject width="100%" height="100%">
+    <div xmlns="http://www.w3.org/1999/xhtml" class="canvas">
+  <style>
+    * { box-sizing: border-box; }
+    .canvas {
+      --ink: #17243d;
+      --muted: #5c6978;
+      --blue: #517b99;
+      --green: #4f8a69;
+      --amber: #b47722;
+      width: 1400px;
+      height: 900px;
+      padding: 42px 48px 36px;
+      overflow: hidden;
+      color: var(--ink);
+      background: #f6f7f3;
+      font-family: "Segoe UI", sans-serif;
+    }
+    h1, h2, h3, p { margin: 0; }
+    .header h1 { font: 700 34px Georgia, serif; }
+    .header p { margin-top: 8px; color: var(--muted); font-size: 16px; }
+    .sequence { position: relative; display: grid; grid-template-columns: 242px 620px 184px 184px; align-items: start; gap: 18px; height: 730px; margin-top: 30px; }
+    .lane {
+      position: relative;
+      height: 625px;
+      padding: 56px 14px 16px;
+      border-radius: 13px;
+      background: #fff;
+      box-shadow: 0 8px 22px rgba(23,36,61,0.08);
+    }
+    .lane.host { border: 3px solid var(--blue); background: #eef5f9; }
+    .lane.buildkit { border: 3px dashed var(--amber); background: #fff8e7; }
+    .lane.image-store { border: 3px solid var(--green); background: #edf6f0; }
+    .lane.runtime { border: 3px solid #33465f; background: #eef1f4; }
+    .lane-label {
+      position: absolute;
+      top: -15px;
+      left: 14px;
+      right: 14px;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      min-height: 40px;
+      padding: 7px 10px;
+      border: 2px solid currentColor;
+      border-radius: 7px;
+      background: #fff;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+    }
+    .host .lane-label { color: #355b77; }
+    .buildkit .lane-label { color: #8b5b17; border-style: dashed; }
+    .image-store .lane-label { color: #386b50; }
+    .runtime .lane-label { color: #33465f; }
+    .icon { display: grid; width: 28px; height: 28px; flex: 0 0 28px; place-items: center; border-radius: 6px; background: #e3ebf0; font-size: 16px; font-weight: 900; }
+    .lane-subtitle { color: var(--muted); font-size: 11px; line-height: 1.45; }
+    .host-files { margin-top: 38px; border: 1px solid #9bb6c8; border-radius: 9px; overflow: hidden; background: #fff; }
+    .host-files h3 { padding: 12px; background: #dceaf3; font-size: 13px; }
+    .host-files div { padding: 10px 12px; border-top: 1px solid #e2e9ed; font: 600 11px Consolas, monospace; }
+    .host-files .ignored { color: #9a4e47; background: #fbefed; text-decoration: line-through; }
+    .context-gate { margin-top: 20px; padding: 13px; border: 2px dashed var(--amber); border-radius: 8px; background: #fff8e7; }
+    .context-gate strong { font-size: 12px; }
+    .context-gate p { margin-top: 6px; color: var(--muted); font-size: 10px; line-height: 1.4; }
+
+    .buildkit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 10px; }
+    .step {
+      position: relative;
+      min-height: 176px;
+      padding: 16px 14px 14px;
+      border: 1px solid #d9bf87;
+      border-radius: 9px;
+      background: #fff;
+    }
+    .step-no { position: absolute; top: -12px; left: 12px; display: grid; width: 28px; height: 28px; place-items: center; border-radius: 50%; background: var(--ink); color: #fff; font-size: 12px; font-weight: 900; }
+    .step .icon { margin-left: auto; color: #8b5b17; background: #fff0c5; }
+    .step h3 { margin-top: 12px; font: 700 16px Georgia, serif; }
+    .step code { display: block; margin-top: 8px; color: #386b50; font: 700 11px Consolas, monospace; }
+    .step p { margin-top: 8px; color: var(--muted); font-size: 10px; line-height: 1.45; }
+    .inherit { margin-top: 9px; padding: 7px; border-radius: 5px; background: #edf6f0; color: #386b50; font-size: 9px; font-weight: 800; text-align: center; text-transform: uppercase; }
+    .cache-panel { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 9px; margin-top: 14px; }
+    .cache { padding: 11px 9px; border-radius: 7px; background: var(--ink); color: #fff; }
+    .cache strong { display: block; font-size: 10px; }
+    .cache span { display: block; margin-top: 3px; color: #b9c5d2; font-size: 9px; line-height: 1.35; }
+
+    .artifact-card { margin-top: 112px; border: 2px solid var(--green); border-radius: 10px; overflow: hidden; background: #fff; }
+    .artifact-card h3 { padding: 13px 10px; background: #dcefe4; font: 700 15px Georgia, serif; text-align: center; }
+    .layers { padding: 14px 10px; }
+    .layer { margin-bottom: 7px; padding: 9px 6px; border-radius: 5px; background: #edf6f0; color: #386b50; font: 700 10px Consolas, monospace; text-align: center; }
+    .immutable { margin: 0 10px 12px; padding: 7px; border-radius: 4px; background: #386b50; color: #fff; font-size: 9px; font-weight: 800; text-align: center; text-transform: uppercase; }
+
+    .container { margin-top: 226px; border: 2px solid #33465f; border-radius: 10px; overflow: hidden; background: var(--ink); color: #fff; }
+    .container h3 { display: flex; align-items: center; gap: 8px; padding: 13px 10px; background: #33465f; font: 700 14px Georgia, serif; }
+    .process { padding: 15px 10px; text-align: center; }
+    .play { display: grid; width: 42px; height: 42px; margin: 0 auto 11px; place-items: center; border-radius: 50%; background: #dcefe4; color: #386b50; font-size: 20px; }
+    .process code { color: #fff; font: 700 10px Consolas, monospace; }
+    .process p { margin-top: 8px; color: #c9d4df; font-size: 9px; line-height: 1.45; }
+
+    .flow { position: absolute; z-index: 5; height: 3px; background: #33465f; }
+    .flow:after { content: ""; position: absolute; right: -1px; top: -6px; border-left: 11px solid #33465f; border-top: 7px solid transparent; border-bottom: 7px solid transparent; }
+    .flow.context { top: 180px; left: 220px; width: 62px; }
+    .flow.image { top: 284px; left: 845px; width: 70px; }
+    .flow.run { top: 402px; left: 1047px; width: 70px; }
+    .summary { position: absolute; left: 0; right: 0; bottom: 6px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+    .summary div { padding: 11px; border-radius: 7px; background: #fff; box-shadow: 0 4px 12px rgba(23,36,61,0.06); color: var(--muted); font-size: 10px; line-height: 1.4; }
+    .summary b { display: block; margin-bottom: 3px; color: var(--ink); font-size: 11px; }
+  </style>
+
+  <div class="header">
+    <h1>One production build, four ownership boundaries</h1>
+    <p>Follow the numbered work from source files to an immutable image and a running container</p>
+  </div>
+
+  <div class="sequence">
+    <section class="lane host">
+      <div class="lane-label"><span class="icon">▣</span> 1 · Windows host</div>
+      <p class="lane-subtitle">Owns editable source. It does not run the production Astro build.</p>
+      <div class="host-files">
+        <h3>Project directory</h3>
+        <div>content/ + src/</div>
+        <div>package.json + bun.lock</div>
+        <div>Dockerfile</div>
+        <div class="ignored">node_modules/</div>
+        <div class="ignored">dist/</div>
+      </div>
+      <div class="context-gate"><strong>.dockerignore gate</strong><p>Only allowed inputs become the context snapshot.</p></div>
+    </section>
+
+    <section class="lane buildkit">
+      <div class="lane-label"><span class="icon">⬡</span> 2 · BuildKit builder · Linux VM</div>
+      <div class="buildkit-grid">
+        <div class="step"><span class="step-no">1</span><span class="icon">▱</span><h3>Load context</h3><code>context: .</code><p>Hash allowed files and reuse known content when possible.</p></div>
+        <div class="step"><span class="step-no">2</span><span class="icon">≡</span><h3>Dependency stage</h3><code>bun install</code><p>Create Linux node_modules. Skip the command when its layer key matches.</p><div class="inherit">produces deps filesystem</div></div>
+        <div class="step"><span class="step-no">3</span><span class="icon">⚙</span><h3>Astro build stage</h3><code>astro build</code><p>Start from deps, copy source, then generate dist and Pagefind.</p><div class="inherit">inherits deps filesystem</div></div>
+        <div class="step"><span class="step-no">4</span><span class="icon">◇</span><h3>Runtime stage</h3><code>COPY --from=...</code><p>Start clean and select dist, runtime dependencies, and config.</p><div class="inherit">produces final layers</div></div>
+      </div>
+      <div class="cache-panel">
+        <div class="cache"><strong>Layer cache</strong><span>Reuses complete instruction results</span></div>
+        <div class="cache"><strong>/bun-cache</strong><span>Reuses downloaded package data</span></div>
+        <div class="cache"><strong>/.astro cache</strong><span>Reuses processed image work</span></div>
+      </div>
+    </section>
+
+    <section class="lane image-store">
+      <div class="lane-label"><span class="icon">▰</span> 3 · Image store</div>
+      <p class="lane-subtitle">Stores the result, not the temporary builder state.</p>
+      <div class="artifact-card">
+        <h3>runtime image</h3>
+        <div class="layers">
+          <div class="layer">base / Bun</div>
+          <div class="layer">node_modules</div>
+          <div class="layer">dist</div>
+          <div class="layer">config</div>
+        </div>
+        <div class="immutable">immutable template</div>
+      </div>
+    </section>
+
+    <section class="lane runtime">
+      <div class="lane-label"><span class="icon">▶</span> 4 · Container runtime</div>
+      <p class="lane-subtitle">Creates a live instance from the stored image.</p>
+      <div class="container">
+        <h3><span class="icon">▦</span> prod container</h3>
+        <div class="process"><span class="play">▶</span><code>bun run preview</code><p>Running process<br />port 4314<br />writable container layer</p></div>
+      </div>
+    </section>
+
+    <div class="flow context"></div>
+    <div class="flow image"></div>
+    <div class="flow run"></div>
+
+    <div class="summary">
+      <div><b>Host</b>Editable project files</div>
+      <div><b>BuildKit</b>Runs Bun, Astro, and cache logic</div>
+      <div><b>Image</b>Packaged immutable filesystem</div>
+      <div><b>Container</b>Running process created from image</div>
+    </div>
+  </div>
+</div>
+  </foreignObject>
+</svg>

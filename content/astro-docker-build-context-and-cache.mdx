@@ -1,0 +1,506 @@
+---
+title: 'How an Astro Site Is Built Inside Docker'
+description: 'A plain-language walkthrough of Docker build context, Bun dependencies, BuildKit caching, Astro output, and the final runtime image.'
+pubDate: 2026-08-18
+category: 'Engineering'
+tags: ['astro', 'docker', 'bun', 'buildkit', 'caching']
+cover: '📦'
+---
+
+import { Callout } from '@sonapraneeth/blog-core/components/mdx';
+
+When a Docker build prints `transferring context`, it is easy to imagine Docker
+copying the entire project into the final container. That is not what is
+happening. The **build context**, an intermediate **build stage**, the final
+**image**, and a running **container** are four different things.
+
+This article follows one concrete setup: an Astro notes site built with Bun in a
+multi-stage Dockerfile. The production service uses this Compose configuration:
+
+```yaml title="docker-compose.yml"
+services:
+  prod:
+    build:
+      context: .
+      target: runtime
+```
+
+The site is not built on Windows and then copied into Docker. Docker receives
+the allowed source files, installs Linux dependencies in an intermediate stage,
+runs Astro there, and copies the files selected by the final target into an
+image. What gets copied depends on whether that target uses Astro Preview or a
+standalone static server. Preview is useful for verifying built output; the
+standalone server is the production architecture for this static site.
+
+<figure>
+  <img
+    src="/diagrams/astro-docker-runtime-architecture.svg"
+    alt="Architecture diagram showing the Windows project passing through dockerignore into BuildKit, persistent BuildKit caches, an Astro Preview verification image, and the recommended Caddy production image"
+    width="1500"
+    height="980"
+    loading="eager"
+  />
+  <figcaption>
+    BuildKit, the image store, and the container runtime are separate services
+    inside Docker Desktop's Linux VM. Builder cache is not container storage.
+  </figcaption>
+</figure>
+
+## The five nouns that make the process understandable
+
+Before tracing the Dockerfile, it helps to separate five related concepts.
+
+### 1. Host files
+
+These are the files in the project directory on the development machine:
+content, source code, configuration, package manifests, images, local build
+output, and possibly a host `node_modules` directory.
+
+### 2. Build context
+
+`context: .` tells Docker that the current directory is the source boundary for
+the build. Docker examines that directory and applies `.dockerignore` before
+making files available to the builder.
+
+The context is best understood as a **box of files the Dockerfile is allowed to
+read**. It is not automatically the content of the final image.
+
+### 3. Build stage
+
+A Dockerfile can contain several `FROM` instructions. Each one begins a stage.
+A stage has its own filesystem and can run commands such as `bun install` or
+`bun run build`.
+
+### 4. Image
+
+An image is the packaged filesystem and configuration produced by the build.
+With a multi-stage Dockerfile, the selected final stage becomes the image; the
+intermediate stages remain build inputs rather than shipped application files.
+
+### 5. Container
+
+A container is a running instance of an image. Building produces an image;
+`docker compose up` creates and starts containers from images.
+
+<Callout type="tip" title="Context does not mean final image">
+  A file can be present in the build context, copied into an intermediate build
+  stage, used to generate output, and still be absent from the final runtime
+  image.
+</Callout>
+
+## Step 1: Docker prepares the build context
+
+The Compose setting is deliberately broad:
+
+```yaml
+build:
+  context: .
+```
+
+Docker starts at the project root, but `.dockerignore` removes files that are
+not useful inputs. In this project, exclusions include:
+
+```text title=".dockerignore"
+**/node_modules
+dist
+.astro
+output
+tools
+scripts
+.git
+*.log
+.env
+public/pagefind
+```
+
+This has three benefits:
+
+1. Docker scans and transfers less data.
+2. Unrelated file changes are less likely to invalidate a cached build step.
+3. Host-only or sensitive files such as `.env` and `.git` are unavailable to
+   accidental `COPY` instructions.
+
+The host `node_modules` directory is intentionally excluded. It may be large,
+and on a Windows host it can contain Windows-native binaries. The Alpine Linux
+image needs dependencies installed for Linux instead.
+
+BuildKit, the modern Docker builder, tracks context content. On repeat local
+builds it can avoid retransmitting unchanged file data already known to the
+builder. It still needs to walk the included files and calculate enough
+metadata or content hashes to discover changes. Therefore, a good
+`.dockerignore` remains important even when incremental transfer is available.
+
+## Step 2: the base image supplies Bun
+
+The first Dockerfile stage starts from a Bun image:
+
+```dockerfile title="Dockerfile"
+FROM oven/bun:1.3.14-alpine AS base
+WORKDIR /app
+ENV NODE_ENV=production
+```
+
+This image already contains Bun. It does not yet contain this application's
+packages or source code. `WORKDIR /app` makes `/app` the default directory for
+the later `COPY` and `RUN` instructions.
+
+## Step 3: the dependency stage creates node_modules
+
+The next stage begins from `base` and installs dependencies:
+
+```dockerfile title="Dockerfile"
+FROM base AS deps
+
+COPY package.json bun.lock* ./
+# The workspace package manifests are copied here too.
+
+RUN --mount=type=cache,target=/bun-cache \
+  bun install --frozen-lockfile
+```
+
+Only package manifests and the lockfile are copied before `bun install`. Bun
+runs **inside the Linux build stage** and creates `/app/node_modules` there.
+Nothing depends on the host's `node_modules`.
+
+This answers the apparent contradiction:
+
+```text
+Host node_modules is ignored
+        does not imply
+Docker has no node_modules
+
+Docker runs bun install
+        which creates
+/app/node_modules inside the deps stage
+```
+
+The order is important. A content edit does not change `package.json`,
+`bun.lock`, or one of the workspace package manifests. Docker can therefore
+reuse the cached result of the dependency stage, including the already-created
+`/app/node_modules` tree.
+
+## Step 4: the build stage inherits those dependencies
+
+The Astro build stage starts with this line:
+
+```dockerfile
+FROM deps AS build
+```
+
+This does not start from an empty filesystem. It starts with the complete
+filesystem produced by `deps`, including Bun and `/app/node_modules`.
+
+The remaining source is then copied and the build runs:
+
+```dockerfile
+COPY . .
+RUN bun run build
+```
+
+The real instruction also attaches Astro's build cache. That cache mount is
+covered in the caching section below; it does not change what the command
+produces.
+
+The package script expands to:
+
+```json title="package.json"
+{
+  "scripts": {
+    "build": "astro build && pagefind --site dist"
+  }
+}
+```
+
+At this moment the build stage contains all three required ingredients:
+
+```text
+Bun executable + Linux node_modules + project source
+```
+
+Astro reads the MDX content and application source, generates the static site
+in `/app/dist`, and Pagefind adds its search index under `dist/pagefind`.
+
+## Step 5: the selected target defines the runtime image
+
+The repository currently has two built-output targets. The target named
+`runtime` packages Astro Preview:
+
+```dockerfile title="Dockerfile"
+FROM base AS runtime
+
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=build /app/dist ./dist
+COPY --from=build /app/dependencies ./dependencies
+COPY package.json astro.config.ts notes.config.ts ./
+
+CMD ["bun", "run", "preview"]
+```
+
+`COPY --from=build` is different from `COPY . .`:
+
+- `COPY . .` reads from the host build context.
+- `COPY --from=build` reads from the filesystem of an earlier Docker stage.
+
+This means the answer to "Does the Docker image contain `node_modules`?" is
+**yes for the current Preview-based `runtime` target**. The Dockerfile
+explicitly copies the Linux dependency tree from `deps` into `runtime`. It also
+copies the workspace dependencies and configuration imported by Astro.
+
+That choice affects image size. Adding or removing packages can change the
+logical size of the runtime image because `node_modules` is part of its
+filesystem. Docker may reuse unchanged layers between image versions, which
+reduces additional transfer and disk storage, but it does not make those files
+absent from the image.
+
+### Astro Preview verifies the build
+
+`bun run preview` invokes `astro preview`. It **does not rebuild the site**. It
+starts Astro's preview HTTP server and serves the files already generated in
+`dist`.
+
+So yes: it is acting as a static HTTP server for the built files. The difference
+is that the server is launched through the Astro CLI and loads Astro's runtime
+configuration. Astro positions `preview` as a way to check built output before
+deployment, not as a production server. Caddy is the repository's direct
+static-server implementation.
+
+The current repository uses this command for `test` and `ppe-astro`, where it
+provides useful build verification and a comparison environment. The current
+Compose file also still points `prod` at this target; that is migration debt,
+not the intended final architecture. Until `prod` moves to `static-runtime`,
+the Astro CLI must exist in that container. Preview also re-evaluates
+`astro.config.ts`, which imports `notes.config.ts` and workspace code. That is
+why this particular runtime copies `node_modules`, `dependencies`, and
+configuration alongside `dist`.
+
+The built site itself is still static. The extra dependencies belong to the
+chosen **server command**, not to the generated HTML, CSS, JavaScript, images,
+or Pagefind index.
+
+### Production uses the static Caddy target
+
+This project also has a static target, currently exercised by PPE. It copies
+`/app/dist` into a Caddy image and serves the files directly:
+
+```dockerfile
+FROM caddy:2.11-alpine AS static-runtime
+COPY Caddyfile.static /etc/caddy/Caddyfile
+COPY --from=static-build /app/dist /srv
+```
+
+That variant does not load Astro, Vite, Node, Bun, or `node_modules` at runtime.
+Caddy reads `/srv`, which is a copy of `dist`, and serves those files directly.
+Astro's output is an ordinary static directory after the build completes, so
+this is the target that production should use after the PPE gate passes.
+
+On a public machine, an edge Caddy instance accepts domain traffic on ports 80
+and 443, provisions HTTPS certificates, and proxies to the static container on
+its private Docker network. The static container serves `/srv`; neither layer
+needs Astro Preview. DNS must point the domain at the machine, and the host or
+provider firewall must allow ports 80 and 443.
+
+Could `node_modules` remain only in BuildKit cache? **Yes, when the final server
+does not need it.** BuildKit can retain the dependency-stage filesystem for
+future builds while the final static image copies only `dist`. A running
+container cannot automatically read BuildKit cache, however. If its startup
+command needs Astro, those runtime dependencies must be copied into the image.
+
+## Does bun install run every time?
+
+Docker evaluates the Dockerfile on every build, but it does not necessarily
+execute every instruction again. Each instruction can produce a cached layer.
+
+For the dependency step, Docker effectively asks:
+
+> Are the base image, relevant Dockerfile instructions, package manifests, lock
+> file, and build arguments identical to the previous cached build?
+
+If the answer is yes, Docker reports the step as `CACHED`. It reuses the layer
+that already contains `/app/node_modules`; the `bun install` process is not
+started.
+
+If a dependency manifest changes, the layer is no longer a match. Bun runs
+again and produces a new dependency layer. A build with `--no-cache`, a pruned
+builder cache, a different builder, or a changed earlier instruction can also
+force it to run.
+
+<figure>
+  <img
+    src="/diagrams/docker-build-fresh-vs-repeat.svg"
+    alt="Comparison of a fresh Docker build and a later MDX-only rebuild, showing context transfer, skipped dependency installation, cache mounts, and image layer reuse"
+    width="1500"
+    height="1000"
+    loading="lazy"
+  />
+  <figcaption>
+    Every build recreates a context snapshot from the filtered host project.
+    Persistent BuildKit stores determine what data and execution can be reused.
+  </figcaption>
+</figure>
+
+The common cases look like this:
+
+- **Nothing changed:** the context, install, Astro build, and runtime image are
+  all cached.
+- **One MDX, CSS, or component file changed:** the context changes, `bun
+  install` remains cached, Astro runs, and the runtime image is updated.
+- **`package.json` or `bun.lock` changed:** Bun installs again, Astro runs, and
+  the runtime image is updated.
+- **An ignored log or host `dist` changed:** the context is unchanged, so all
+  relevant steps remain cached.
+- **The build uses `--no-cache`:** Bun and Astro run even when the source files
+  themselves are unchanged.
+
+## BuildKit keeps several reusable stores
+
+The word "cache" hides several mechanisms with different jobs.
+
+### Context content store
+
+The build context snapshot is created again for each build from the host project
+after `.dockerignore` is applied. BuildKit's content-addressed store remembers
+file blobs it already has, so unchanged content normally does not need to be
+transmitted again. Docker must still scan the allowed host files to discover
+what changed.
+
+### Docker layer cache
+
+The result of `RUN bun install`, including the builder's
+`/app/node_modules`, can be stored as a BuildKit layer. If all inputs to that
+instruction match, the complete dependency-stage filesystem is reused and Bun
+does not run.
+
+This cached builder layer is separate from the final image. The verification
+`runtime` target explicitly copies its `node_modules` into the image; the
+production-oriented `static-runtime` target does not.
+
+### Bun download cache
+
+The dependency instruction mounts a persistent BuildKit cache at `/bun-cache`:
+
+```dockerfile
+RUN --mount=type=cache,target=/bun-cache \
+  bun install --frozen-lockfile
+```
+
+If Bun must install again, this cache can supply package data that was already
+downloaded. It makes a real install cheaper; it does not turn an executed step
+into a cached Docker layer.
+
+### Astro image-processing cache
+
+The build instruction mounts another cache:
+
+```dockerfile
+RUN --mount=type=cache,\
+target=/app/node_modules/.astro \
+  bun run build
+```
+
+Astro can reuse expensive derived artifacts, especially optimized images, even
+when a content change requires the overall build command to execute again.
+
+On Docker Desktop for Windows, these caches are normally managed inside Docker
+Desktop's Linux virtual disk. They are not directories in the project and
+should not be edited manually. They survive ordinary container replacement but
+can be removed by builder pruning, Docker Desktop cleanup, or a reset.
+
+Useful inspection commands include:
+
+```powershell
+docker builder du
+docker system df -v
+```
+
+## Does copying only changed files save time?
+
+Usually, there is no need to create a custom changed-file copier.
+
+BuildKit already identifies context content and avoids needless transfer where
+it can. More importantly, the Dockerfile's layer boundaries determine whether
+commands rerun. Copying package manifests before source code is the valuable
+optimization here because it protects the expensive dependency layer from
+ordinary content edits.
+
+There are still two costs to distinguish:
+
+1. **Context discovery and transfer:** Docker walks the allowed host files,
+   detects changes, and makes needed content available to the builder.
+2. **Build execution:** Astro parses content, renders pages, processes assets,
+   and Pagefind indexes the generated HTML.
+
+For a content-heavy Astro site with a sensible `.dockerignore`, build execution
+is commonly the larger cost. Thousands of small files on a Windows-mounted
+filesystem can still make context scanning measurable, but custom delta-copy
+logic would add complexity while duplicating work BuildKit already performs.
+
+Measure before changing the pipeline:
+
+```powershell
+docker compose build --progress=plain prod
+```
+
+Look for two parts of the output:
+
+```text
+load build context
+transferring context: ...
+```
+
+and:
+
+```text
+RUN ... bun run build
+```
+
+If context loading takes a fraction of a second while Astro and Pagefind take
+much longer, optimizing context transfer will not materially improve the total.
+If context loading is large, inspect which non-ignored directories contain the
+most files before changing the Dockerfile.
+
+## Development mode is intentionally different
+
+The development service uses a bind mount:
+
+```yaml title="docker-compose.yml"
+services:
+  dev:
+    volumes:
+      - ./:/app
+      - /app/node_modules
+```
+
+The first mount presents live host files at `/app` so Astro can react to edits.
+The second keeps `/app/node_modules` in a Docker-managed volume instead of
+letting the host directory replace Linux dependencies.
+
+This is not the production image-building flow. Development favors immediate
+feedback and hot reload; production favors reproducible, immutable output.
+
+## A compact mental model
+
+Remember the process as five decisions:
+
+1. `.dockerignore` decides what may enter the context.
+2. BuildKit creates a context snapshot and checks its persistent stores.
+3. `COPY` decides what enters each build stage.
+4. Cache keys decide which instructions must execute again.
+5. The final target's `COPY --from=...` instructions decide what enters its
+  runtime image.
+
+For this Astro site, a normal MDX edit follows this path:
+
+```text
+The changed MDX file enters the context
+  -> the dependency layer is reused
+  -> the build stage receives the changed source
+  -> Astro and Pagefind regenerate dist
+  -> the new dist enters the runtime image
+  -> the container serves the updated site
+```
+
+The shortest answer is therefore: **source is filtered on the host and sent to
+BuildKit; dependencies and Astro output are built and cached inside Docker;
+Preview environments may use the larger Astro image with `node_modules`, while
+production should ship the smaller Caddy image containing only `dist` and its
+static-server configuration.**

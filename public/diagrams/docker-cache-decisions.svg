@@ -1,0 +1,129 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="760" viewBox="0 0 1200 760" role="img" aria-labelledby="title desc">
+  <title id="title">Docker cache decisions for an Astro site</title>
+  <desc id="desc">A content edit reuses dependencies but reruns the Astro build. A package change reruns installation and the build. With no changes all layers are reused.</desc>
+  <defs>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="4" stdDeviation="5" flood-color="#17243d" flood-opacity="0.12"/>
+    </filter>
+    <pattern id="dots" width="20" height="20" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="1" fill="#cad4dc"/>
+    </pattern>
+    <marker id="green-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#4e8b69"/>
+    </marker>
+    <marker id="amber-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#b17a1b"/>
+    </marker>
+    <marker id="blue-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#527b9a"/>
+    </marker>
+    <style>
+      .title { font: 700 30px Georgia, serif; fill: #17243d; }
+      .subtitle { font: 16px 'Segoe UI', sans-serif; fill: #526171; }
+      .eyebrow { font: 700 12px 'Segoe UI', sans-serif; letter-spacing: 1.4px; fill: #526171; }
+      .heading { font: 700 18px Georgia, serif; fill: #17243d; }
+      .body { font: 14px 'Segoe UI', sans-serif; fill: #334155; }
+      .small { font: 13px 'Segoe UI', sans-serif; fill: #526171; }
+      .mono { font: 600 13px Consolas, monospace; fill: #17243d; }
+      .white { fill: #ffffff; }
+      .green-flow { stroke: #4e8b69; stroke-width: 2.5; fill: none; marker-end: url(#green-arrow); }
+      .amber-flow { stroke: #b17a1b; stroke-width: 2.5; fill: none; marker-end: url(#amber-arrow); }
+      .blue-flow { stroke: #527b9a; stroke-width: 2.5; fill: none; marker-end: url(#blue-arrow); }
+    </style>
+  </defs>
+
+  <rect width="1200" height="760" fill="#f6f7f2"/>
+  <rect width="1200" height="760" fill="url(#dots)" opacity="0.55"/>
+  <text x="48" y="58" class="title">What runs again after a change?</text>
+  <text x="48" y="88" class="subtitle">Docker caches instruction results. A changed input invalidates that step and every dependent step after it.</text>
+
+  <g filter="url(#shadow)">
+    <rect x="48" y="132" width="344" height="470" rx="8" fill="#ffffff" stroke="#73a88d"/>
+    <rect x="48" y="132" width="344" height="62" rx="8" fill="#cce6d7"/>
+    <text x="68" y="157" class="eyebrow">SCENARIO A</text>
+    <text x="68" y="182" class="heading">One MDX file changed</text>
+
+    <rect x="76" y="226" width="288" height="52" rx="6" fill="#edf7f1" stroke="#b8d5c4"/>
+    <text x="92" y="248" class="mono">package files unchanged</text>
+    <text x="92" y="267" class="small">Dependency cache key matches</text>
+    <path d="M220 278 V310" class="green-flow"/>
+
+    <rect x="76" y="314" width="288" height="58" rx="6" fill="#253752"/>
+    <text x="92" y="338" class="mono white">bun install: CACHED</text>
+    <text x="92" y="358" class="small white">Reuse Linux node_modules layer</text>
+    <path d="M220 372 V404" class="green-flow"/>
+
+    <rect x="76" y="408" width="288" height="58" rx="6" fill="#e9f4ee" stroke="#73a88d"/>
+    <text x="92" y="432" class="mono">COPY source: CHANGED</text>
+    <text x="92" y="452" class="small">New MDX enters the build stage</text>
+    <path d="M220 466 V498" class="green-flow"/>
+
+    <rect x="76" y="502" width="288" height="70" rx="6" fill="#4e8b69"/>
+    <text x="92" y="528" class="mono white">astro build: RUNS</text>
+    <text x="92" y="549" class="small white">Regenerate dist and Pagefind;</text>
+    <text x="92" y="567" class="small white">publish an updated image</text>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="428" y="132" width="344" height="470" rx="8" fill="#ffffff" stroke="#d8b45f"/>
+    <rect x="428" y="132" width="344" height="62" rx="8" fill="#f4e2ad"/>
+    <text x="448" y="157" class="eyebrow">SCENARIO B</text>
+    <text x="448" y="182" class="heading">bun.lock changed</text>
+
+    <rect x="456" y="226" width="288" height="52" rx="6" fill="#fff8e8" stroke="#ead9aa"/>
+    <text x="472" y="248" class="mono">package files changed</text>
+    <text x="472" y="267" class="small">Dependency cache key differs</text>
+    <path d="M600 278 V310" class="amber-flow"/>
+
+    <rect x="456" y="314" width="288" height="58" rx="6" fill="#b17a1b"/>
+    <text x="472" y="338" class="mono white">bun install: RUNS</text>
+    <text x="472" y="358" class="small white">Download cache may make it faster</text>
+    <path d="M600 372 V404" class="amber-flow"/>
+
+    <rect x="456" y="408" width="288" height="58" rx="6" fill="#fff8e8" stroke="#d8b45f"/>
+    <text x="472" y="432" class="mono">new dependency layer</text>
+    <text x="472" y="452" class="small">Later stages inherit new inputs</text>
+    <path d="M600 466 V498" class="amber-flow"/>
+
+    <rect x="456" y="502" width="288" height="70" rx="6" fill="#b17a1b"/>
+    <text x="472" y="528" class="mono white">astro build: RUNS</text>
+    <text x="472" y="549" class="small white">Build cache may reuse unchanged</text>
+    <text x="472" y="567" class="small white">optimized image artifacts</text>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="808" y="132" width="344" height="470" rx="8" fill="#ffffff" stroke="#7fa8c5"/>
+    <rect x="808" y="132" width="344" height="62" rx="8" fill="#dbe9f4"/>
+    <text x="828" y="157" class="eyebrow">SCENARIO C</text>
+    <text x="828" y="182" class="heading">No relevant file changed</text>
+
+    <rect x="836" y="226" width="288" height="52" rx="6" fill="#edf5fa" stroke="#b9cedd"/>
+    <text x="852" y="248" class="mono">context content matches</text>
+    <text x="852" y="267" class="small">Docker finds known inputs</text>
+    <path d="M980 278 V310" class="blue-flow"/>
+
+    <rect x="836" y="314" width="288" height="58" rx="6" fill="#527b9a"/>
+    <text x="852" y="338" class="mono white">bun install: CACHED</text>
+    <text x="852" y="358" class="small white">No process is started</text>
+    <path d="M980 372 V404" class="blue-flow"/>
+
+    <rect x="836" y="408" width="288" height="58" rx="6" fill="#527b9a"/>
+    <text x="852" y="432" class="mono white">astro build: CACHED</text>
+    <text x="852" y="452" class="small white">Existing dist layer is reused</text>
+    <path d="M980 466 V498" class="blue-flow"/>
+
+    <rect x="836" y="502" width="288" height="70" rx="6" fill="#253752"/>
+    <text x="852" y="528" class="mono white">runtime image: CACHED</text>
+    <text x="852" y="549" class="small white">Compose can recreate a container</text>
+    <text x="852" y="567" class="small white">without rebuilding its filesystem</text>
+  </g>
+
+  <rect x="48" y="638" width="1104" height="82" rx="8" fill="#ffffff" stroke="#c7d0d8"/>
+  <text x="72" y="666" class="eyebrow">THREE SEPARATE SAVINGS</text>
+  <rect x="72" y="684" width="12" height="12" rx="2" fill="#527b9a"/>
+  <text x="94" y="695" class="small">Docker layer cache skips a command</text>
+  <rect x="382" y="684" width="12" height="12" rx="2" fill="#d8b45f"/>
+  <text x="404" y="695" class="small">Bun cache avoids repeat downloads</text>
+  <rect x="700" y="684" width="12" height="12" rx="2" fill="#73a88d"/>
+  <text x="722" y="695" class="small">Astro cache reuses derived image work</text>
+</svg>

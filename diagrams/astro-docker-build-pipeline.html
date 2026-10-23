@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="svg-width" content="1400" />
+  <meta name="svg-height" content="900" />
+  <title>Astro Docker architecture boundaries</title>
+</head>
+<body>
+<!-- SVG_CONTENT_START -->
+<div xmlns="http://www.w3.org/1999/xhtml" class="canvas">
+  <style>
+    * { box-sizing: border-box; }
+    .canvas {
+      --ink: #17243d;
+      --muted: #5c6978;
+      --paper: #f4f6f2;
+      --line: #c8d1d7;
+      width: 1400px;
+      height: 900px;
+      padding: 44px 48px 40px;
+      overflow: hidden;
+      color: var(--ink);
+      background-color: var(--paper);
+      background-image: radial-gradient(#cbd4d9 1.2px, transparent 1.2px);
+      background-size: 22px 22px;
+      font-family: "Segoe UI", sans-serif;
+    }
+    h1, h2, h3, p { margin: 0; }
+    .header { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 28px; }
+    .header h1 { font: 700 34px Georgia, serif; letter-spacing: 0; }
+    .header p { margin-top: 8px; color: var(--muted); font-size: 16px; }
+    .legend { display: flex; gap: 18px; color: var(--muted); font-size: 12px; font-weight: 700; }
+    .legend span { display: flex; align-items: center; gap: 7px; }
+    .legend i { display: block; width: 20px; height: 12px; border-radius: 3px; }
+    .legend .physical { border: 2px solid #517b99; background: #eaf2f7; }
+    .legend .logical { border: 2px dashed #b47722; background: #fff6df; }
+    .legend .artifact { border: 2px solid #4f8a69; background: #e8f4ed; }
+
+    .architecture { display: grid; grid-template-columns: 340px 44px 590px 44px 286px; align-items: center; }
+    .boundary {
+      position: relative;
+      height: 700px;
+      border: 3px solid #517b99;
+      border-radius: 14px;
+      background: rgba(234, 242, 247, 0.88);
+      box-shadow: 0 10px 24px rgba(23, 36, 61, 0.10);
+    }
+    .boundary-label {
+      position: absolute;
+      top: -15px;
+      left: 20px;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 5px 12px;
+      border: 2px solid #517b99;
+      border-radius: 6px;
+      background: #fff;
+      color: #355b77;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+    .icon {
+      display: grid;
+      width: 34px;
+      height: 34px;
+      place-items: center;
+      border-radius: 8px;
+      background: var(--icon-bg, #dceaf3);
+      color: var(--icon-ink, #355b77);
+      font-size: 20px;
+      font-weight: 800;
+    }
+    .icon.small { width: 28px; height: 28px; border-radius: 6px; font-size: 16px; }
+    .host { padding: 46px 22px 22px; }
+    .host-title { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+    .host-title h2 { font: 700 23px Georgia, serif; }
+    .host-title p { margin-top: 4px; color: var(--muted); font-size: 13px; }
+    .folder {
+      border: 2px solid #8aa9bd;
+      border-radius: 10px;
+      background: #fff;
+      overflow: hidden;
+    }
+    .folder-head { display: flex; align-items: center; gap: 10px; padding: 13px 15px; background: #dceaf3; font-weight: 800; }
+    .file-list { display: grid; gap: 8px; padding: 14px; }
+    .file { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; border-radius: 6px; background: #f4f8fa; font: 600 13px Consolas, monospace; }
+    .file strong { color: #4f8a69; font: 800 10px "Segoe UI", sans-serif; letter-spacing: 0.6px; }
+    .ignored { color: #9a4e47; text-decoration: line-through; background: #fbefed; }
+    .ignored strong { color: #9a4e47; text-decoration: none; }
+    .filter {
+      margin-top: 16px;
+      padding: 14px;
+      border: 2px dashed #b47722;
+      border-radius: 9px;
+      background: #fff6df;
+    }
+    .filter-title { display: flex; align-items: center; gap: 9px; font-weight: 800; }
+    .filter p { margin-top: 8px; color: var(--muted); font-size: 12px; line-height: 1.45; }
+    .host-note { margin-top: 16px; padding: 13px; border-left: 4px solid #517b99; background: rgba(255,255,255,0.72); color: var(--muted); font-size: 12px; line-height: 1.5; }
+
+    .arrow-zone { position: relative; height: 700px; }
+    .arrow { position: absolute; top: 330px; left: 2px; width: 40px; height: 3px; background: #33465f; }
+    .arrow:after { content: ""; position: absolute; right: -1px; top: -6px; border-left: 11px solid #33465f; border-top: 7px solid transparent; border-bottom: 7px solid transparent; }
+    .arrow-label { position: absolute; top: 288px; left: 50%; width: 100px; transform: translateX(-50%); color: var(--muted); font-size: 10px; font-weight: 800; line-height: 1.3; text-align: center; text-transform: uppercase; }
+
+    .docker { padding: 46px 20px 20px; background: rgba(232, 244, 237, 0.88); border-color: #4f8a69; }
+    .docker .boundary-label { border-color: #4f8a69; color: #386b50; }
+    .desktop-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+    .desktop-title { display: flex; align-items: center; gap: 11px; }
+    .desktop-title h2 { font: 700 23px Georgia, serif; }
+    .desktop-title p { margin-top: 4px; color: var(--muted); font-size: 12px; }
+    .linux-badge { padding: 6px 9px; border-radius: 5px; background: #386b50; color: #fff; font-size: 10px; font-weight: 800; letter-spacing: 0.7px; }
+    .buildkit {
+      position: relative;
+      height: 480px;
+      padding: 42px 16px 16px;
+      border: 2px dashed #b47722;
+      border-radius: 11px;
+      background: rgba(255, 246, 223, 0.78);
+    }
+    .buildkit-label { position: absolute; top: -13px; left: 16px; display: flex; align-items: center; gap: 8px; padding: 5px 10px; border: 2px dashed #b47722; border-radius: 6px; background: #fff; color: #8b5b17; font-size: 11px; font-weight: 800; letter-spacing: 0.8px; text-transform: uppercase; }
+    .context-store { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; border: 1px solid #dbbd7f; border-radius: 8px; background: #fff; }
+    .context-store h3 { font-size: 14px; }
+    .context-store p { margin-top: 3px; color: var(--muted); font-size: 11px; }
+    .context-chip { padding: 6px 9px; border-radius: 5px; background: #fff1c7; color: #8b5b17; font: 700 11px Consolas, monospace; }
+    .stages { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 14px; }
+    .stage { position: relative; min-height: 180px; padding: 13px 11px; border: 1px solid #d6bd86; border-radius: 8px; background: #fff; }
+    .stage + .stage:before { content: "›"; position: absolute; left: -10px; top: 72px; color: #8b5b17; font-size: 25px; font-weight: 900; }
+    .stage-no { display: grid; width: 24px; height: 24px; place-items: center; border-radius: 50%; background: #17243d; color: #fff; font-size: 11px; font-weight: 800; }
+    .stage h3 { margin-top: 10px; font: 700 16px Georgia, serif; }
+    .stage code { display: block; margin-top: 8px; color: #386b50; font: 700 11px Consolas, monospace; }
+    .stage p { margin-top: 8px; color: var(--muted); font-size: 11px; line-height: 1.45; }
+    .cache-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
+    .cache { display: flex; align-items: center; gap: 10px; padding: 11px; border-radius: 7px; background: #17243d; color: #fff; }
+    .cache strong { display: block; font-size: 11px; }
+    .cache span { display: block; margin-top: 2px; color: #b9c5d2; font-size: 10px; }
+    .stores { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px; }
+    .store { display: flex; align-items: center; gap: 10px; padding: 12px; border: 1px solid #9cc1ab; border-radius: 8px; background: #fff; }
+    .store strong { display: block; font-size: 12px; }
+    .store span { display: block; margin-top: 3px; color: var(--muted); font-size: 10px; }
+
+    .runtime { height: 700px; padding: 46px 18px 20px; border-color: #33465f; background: rgba(238, 241, 244, 0.92); }
+    .runtime .boundary-label { border-color: #33465f; color: #33465f; }
+    .runtime h2 { font: 700 22px Georgia, serif; }
+    .runtime > p { margin-top: 6px; color: var(--muted); font-size: 12px; }
+    .image-card, .container-card { margin-top: 22px; border-radius: 10px; overflow: hidden; box-shadow: 0 7px 16px rgba(23,36,61,0.10); }
+    .image-card { border: 2px solid #4f8a69; background: #fff; }
+    .container-card { border: 2px solid #33465f; background: #17243d; color: #fff; }
+    .card-head { display: flex; align-items: center; gap: 10px; padding: 13px; font-weight: 800; }
+    .image-card .card-head { background: #dcefe4; }
+    .container-card .card-head { background: #33465f; }
+    .card-body { padding: 13px; }
+    .artifact { margin-bottom: 8px; padding: 9px; border-radius: 5px; background: #f1f6f3; color: #386b50; font: 700 11px Consolas, monospace; }
+    .container-card .card-body { color: #c9d4df; font-size: 11px; line-height: 1.55; }
+    .instantiate { position: relative; height: 48px; }
+    .instantiate:before { content: ""; position: absolute; left: 50%; top: 6px; width: 3px; height: 29px; transform: translateX(-50%); background: #33465f; }
+    .instantiate:after { content: ""; position: absolute; left: 50%; top: 28px; transform: translateX(-50%); border-top: 10px solid #33465f; border-left: 7px solid transparent; border-right: 7px solid transparent; }
+    .runtime-note { margin-top: 17px; padding: 11px; border-radius: 7px; background: #fff; color: var(--muted); font-size: 11px; line-height: 1.45; }
+    .footer-note { position: absolute; left: 48px; right: 48px; bottom: 22px; color: #5c6978; font-size: 11px; text-align: center; }
+  </style>
+
+  <div class="header">
+    <div>
+      <h1>Where the Astro Docker build actually happens</h1>
+      <p>Physical boundaries, build services, immutable artifacts, and the running process</p>
+    </div>
+    <div class="legend">
+      <span><i class="physical"></i> machine boundary</span>
+      <span><i class="logical"></i> builder boundary</span>
+      <span><i class="artifact"></i> stored artifact</span>
+    </div>
+  </div>
+
+  <div class="architecture">
+    <section class="boundary host">
+      <div class="boundary-label"><span class="icon small">▣</span> Host machine</div>
+      <div class="host-title">
+        <span class="icon">⊞</span>
+        <div><h2>Windows</h2><p>Developer filesystem</p></div>
+      </div>
+      <div class="folder">
+        <div class="folder-head"><span class="icon small">▱</span> interview-prep/</div>
+        <div class="file-list">
+          <div class="file"><span>content/**/*.mdx</span><strong>SEND</strong></div>
+          <div class="file"><span>src/ + public/</span><strong>SEND</strong></div>
+          <div class="file"><span>package.json</span><strong>SEND</strong></div>
+          <div class="file ignored"><span>node_modules/</span><strong>IGNORE</strong></div>
+          <div class="file ignored"><span>dist/ + .git/</span><strong>IGNORE</strong></div>
+        </div>
+      </div>
+      <div class="filter">
+        <div class="filter-title"><span class="icon small">⌁</span> .dockerignore filter</div>
+        <p>Defines which host files may cross into the BuildKit context.</p>
+      </div>
+      <div class="host-note">The host does not build Astro and its Windows <b>node_modules</b> never enters Docker.</div>
+    </section>
+
+    <div class="arrow-zone">
+      <div class="arrow-label">send allowed context</div>
+      <div class="arrow"></div>
+    </div>
+
+    <section class="boundary docker">
+      <div class="boundary-label"><span class="icon small">◇</span> Docker Desktop Linux VM</div>
+      <div class="desktop-head">
+        <div class="desktop-title"><span class="icon">⚙</span><div><h2>Docker services</h2><p>Managed outside the project directory</p></div></div>
+        <span class="linux-badge">LINUX</span>
+      </div>
+      <div class="buildkit">
+        <div class="buildkit-label"><span class="icon small">⬡</span> BuildKit builder</div>
+        <div class="context-store">
+          <div><h3>Build context snapshot</h3><p>Content-addressed files available to COPY</p></div>
+          <span class="context-chip">context: .</span>
+        </div>
+        <div class="stages">
+          <div class="stage"><span class="stage-no">1</span><h3>deps stage</h3><code>bun install</code><p>Creates Linux dependencies at /app/node_modules.</p></div>
+          <div class="stage"><span class="stage-no">2</span><h3>build stage</h3><code>astro build</code><p>Inherits deps, copies source, and generates dist.</p></div>
+          <div class="stage"><span class="stage-no">3</span><h3>runtime stage</h3><code>COPY --from</code><p>Selects only the files needed to serve the site.</p></div>
+        </div>
+        <div class="cache-row">
+          <div class="cache"><span class="icon small">≡</span><div><strong>Layer cache</strong><span>Can skip bun install entirely</span></div></div>
+          <div class="cache"><span class="icon small">↺</span><div><strong>Cache mounts</strong><span>Bun downloads + Astro images</span></div></div>
+        </div>
+      </div>
+      <div class="stores">
+        <div class="store"><span class="icon small">▰</span><div><strong>Local image store</strong><span>Final immutable layers</span></div></div>
+        <div class="store"><span class="icon small">▷</span><div><strong>Container runtime</strong><span>Starts image processes</span></div></div>
+      </div>
+    </section>
+
+    <div class="arrow-zone">
+      <div class="arrow-label">create from final image</div>
+      <div class="arrow"></div>
+    </div>
+
+    <section class="boundary runtime">
+      <div class="boundary-label"><span class="icon small">▦</span> Runtime objects</div>
+      <h2>What gets shipped</h2>
+      <p>Build inputs and running state are separate.</p>
+      <div class="image-card">
+        <div class="card-head"><span class="icon small">▰</span> Docker image</div>
+        <div class="card-body">
+          <div class="artifact">dist/</div>
+          <div class="artifact">node_modules/</div>
+          <div class="artifact">runtime config</div>
+        </div>
+      </div>
+      <div class="instantiate"></div>
+      <div class="container-card">
+        <div class="card-head"><span class="icon small">▶</span> Running container</div>
+        <div class="card-body"><b>astro preview</b><br />reads the image filesystem and listens on port 4314.</div>
+      </div>
+      <div class="runtime-note"><b>Image:</b> immutable template<br /><b>Container:</b> running instance with process and writable state</div>
+    </section>
+  </div>
+  <div class="footer-note">Arrows show data or artifact movement. Boxes show ownership boundaries, not merely visual grouping.</div>
+</div>
+<!-- SVG_CONTENT_END -->
+</body>
+</html>
