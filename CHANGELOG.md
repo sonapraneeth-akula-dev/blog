@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Upgrade Astro to 7.4.0, MDX to 8.1.0, KaTeX to 0.19.0, and remaining
+  workspace dependencies. Retain TypeScript 6.0.3 for Astro Check.
+- Pin Bun 1.4.4, Caddy 2.11.7 Alpine, and Dockerfile frontend 1.28.0.
+  Fetch locked dependencies using workspace manifests and install
+  offline from a BuildKit cache, keeping source edits out of the install layer.
+
 ## [0.2.0] - 2026-07-26
 
 ### Changed
