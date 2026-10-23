@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Synchronize the sparse shared-library submodule and define its required
+  Mermaid 12.2.0 catalog entry so workspace installs remain reproducible.
 - Upgrade Astro to 7.4.0, MDX to 8.1.0, KaTeX to 0.19.0, and remaining
   workspace dependencies. Retain TypeScript 6.0.3 for Astro Check.
 - Pin Bun 1.4.4, Caddy 2.11.7 Alpine, and Dockerfile frontend 1.28.0.
