@@ -1,20 +1,26 @@
-# syntax=docker/dockerfile:1.7
+# syntax=docker/dockerfile:1.28.0
 
 # ─── Base ────────────────────────────────────────────────────────────────────
 # Pinned Bun image matching package.json "packageManager".
-FROM oven/bun:1.3.14-alpine AS base
+FROM oven/bun:1.4.4-alpine AS base
 WORKDIR /app
 ENV NODE_ENV=production
+ARG NPM_REGISTRY=https://registry.npmjs.org/
+ENV BUN_CONFIG_REGISTRY=${NPM_REGISTRY}
 
 # ─── Dependencies ────────────────────────────────────────────────────────────
 # Install all dependencies (including dev) for building and previewing.
 FROM base AS deps
 # The blog consumes @sonapraneeth/blog-core from the sparse git submodule under
 # dependencies/. bun needs each workspace package's manifest present to resolve
-# the `workspace:*` links, so copy the submodule before installing.
+# the `workspace:*` links; source changes must not invalidate the install layer.
 COPY package.json bun.lock* ./
-COPY dependencies ./dependencies
-RUN bun install --frozen-lockfile
+ENV BUN_INSTALL_CACHE_DIR=/bun-cache
+COPY dependencies/packages_astro/packages/blog-core/package.json ./dependencies/packages_astro/packages/blog-core/package.json
+COPY dependencies/packages_astro/packages/components/package.json ./dependencies/packages_astro/packages/components/package.json
+COPY dependencies/packages_astro/packages/plugins/satteri/package.json ./dependencies/packages_astro/packages/plugins/satteri/package.json
+RUN --mount=type=cache,target=/bun-cache bun pm fetch
+RUN --mount=type=cache,target=/bun-cache bun install --offline --frozen-lockfile
 
 # ─── Development ─────────────────────────────────────────────────────────────
 # Live watching + hot module reloading. Source is bind-mounted via compose.
